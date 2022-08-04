@@ -1,0 +1,51 @@
+.ConceptNode {
+  border-width: 2px;
+  min-width: 250px;
+  border-color: black;
+  border-style: solid;
+  border-radius: 0px;
+  background-color: white;
+  padding: 0px;
+  width: fit-content;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: left;
+}
+
+.ConceptNode > .header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  justify-items: center;
+  padding-right: 10px;
+  padding-top: 10px;
+}
+
+.properties {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.ConceptNode > .footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  justify-items: center;
+  padding-bottom: 2px;
+}
+
+.DeclarationType {
+  color: black;
+  font-style: italic;
+  /* font-size: small; */
+  text-align: right;
+}
+
+.DeclarationName {
+  color: black;
+  font-weight: bolder;
+  text-align: center;
+}

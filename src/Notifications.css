@@ -1,0 +1,24 @@
+.danger {
+  background-color: lightpink;
+  padding-left: 20px;
+}
+
+.warning {
+  background-color: orange;
+  padding-left: 20px;
+}
+
+.information {
+  background-color: lightgreen;
+  padding-left: 20px;
+}
+
+.loading {
+  background-color: lightgreen;
+  padding-left: 20px;
+}
+
+.success {
+  background-color: lightgreen;
+  padding-left: 20px;
+}

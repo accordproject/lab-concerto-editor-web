@@ -1,0 +1,45 @@
+.diagram {
+  flex-direction: column;
+  display: flex;
+  width: 100%;
+  min-height: 500px;
+  height: 90vh;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.diagram aside {
+  border-right: 1px solid #eee;
+  padding: 15px 10px;
+  font-size: 12px;
+  background: #fcfcfc;
+}
+
+.diagram aside > * {
+  margin-bottom: 10px;
+  cursor: grab;
+}
+
+.diagram aside .description {
+  margin-bottom: 10px;
+}
+
+.diagram .reactflow-wrapper {
+  flex-grow: 1;
+}
+
+.message {
+  font-size: 20px;
+  background: pink;
+}
+
+@media screen and (min-width: 768px) {
+  .diagram {
+    flex-direction: row;
+  }
+
+  .diagram aside {
+    width: 20%;
+    max-width: 180px;
+  }
+}
