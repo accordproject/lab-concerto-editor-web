@@ -9,12 +9,12 @@ interface Values {
 }
 
 function UrlForm() {
-    const ctoLoaded = useStore((state) => state.ctoLoaded);
+    const ctoTextLoaded = useStore((state) => state.ctoTextLoaded);
 
     return <div>
         <Formik
             initialValues={{
-                url: 'https://models.accordproject.org/finance/bond@0.2.0.cto',
+                url: 'https://models.accordproject.org/finance/loan@0.2.0.cto',
             }}
             onSubmit={async (
                 values: Values,
@@ -23,7 +23,7 @@ function UrlForm() {
                 try {
                     const response = await fetch(values.url);
                     const cto = await response.text();
-                    ctoLoaded([cto]);
+                    ctoTextLoaded(cto);
                 }
                 catch(err) {
                     alert(err);
@@ -33,7 +33,7 @@ function UrlForm() {
             <Form>
                 <label htmlFor="url">URL</label>
                 <Field id="url" name="url" placeholder="URL to a CTO file" />
-                <button type="submit">Load</button>
+                <button className="button is-primary" type="submit">Load</button>
             </Form>
         </Formik>
     </div>

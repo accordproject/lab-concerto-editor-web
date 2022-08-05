@@ -19,6 +19,11 @@ function isString(value: unknown) {
   return typeof value === 'string' || value instanceof String;
 }
 
+export function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message
+  return String(error)
+}
+
 export function errorToMessage(error: unknown): string {
   const message = (error as HttpError).message;
   const data = (error as HttpError).data;

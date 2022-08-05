@@ -54,7 +54,6 @@ export function getFullyQualified(type: ITypeIdentifier): string {
 
 export function getNameOfType(property: PropertyOrEnum): string {
   const type = getType(property);
-  console.log(type);
   const dot = type.name.lastIndexOf('.');
   return type.name.substring(dot+1);
 }

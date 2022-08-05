@@ -1,7 +1,46 @@
-import { Node, Edge, MarkerType } from 'react-flow-renderer';
+import { Node, Edge, Position, MarkerType } from 'react-flow-renderer';
+import dagre from 'dagre';
 import { IConceptDeclaration, IDecoratorNumber, IEnumDeclaration, IModel, IModels, IObjectProperty, IRelationshipProperty } from './metamodel/concerto.metamodel';
 import { EnumOrConcept, EdgeData, ConceptNodeData, EnumNodeData } from './types';
 import { getLabel, isEnum, isObjectOrRelationshipProperty } from './modelUtil';
+
+const dagreGraph = new dagre.graphlib.Graph();
+dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+const nodeWidth = 350;
+const nodeHeight = 120;
+
+export function getLayoutedElements(nodes: Node[], edges: Edge[], direction = 'TB') {
+  const isHorizontal = direction === 'LR';
+  dagreGraph.setGraph({ rankdir: direction });
+
+  nodes.forEach((node: Node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  edges.forEach((edge: Edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const newNodes:Node[] = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    // We are shifting the dagre node position (anchor=center center) to the top left
+    // so it matches the React Flow node anchor point (top left).
+    return {
+      ...node,
+      targetPosition: isHorizontal ? Position.Left : Position.Top,
+      sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2
+      }
+    }
+  });
+
+  return { nodes: newNodes, edges };
+};
 
 /**
  * Converts the metamodel to a react-flow graph
@@ -34,8 +73,6 @@ export function metamodelToReactFlow(models: IModels) {
     nodes = nodes.concat(modelDiagram.nodes);
     edges = edges.concat(modelDiagram.edges);
   });
-  console.log(nodes);
-  console.log(edges);
   return { nodes, edges };
 }
 
@@ -94,7 +131,6 @@ export function modelToReactFlow(model: IModel) {
       .filter(property => isObjectOrRelationshipProperty(property))
       .forEach(property => {
         const notEnumProperty = property as IObjectProperty | IRelationshipProperty;
-        console.log('property', notEnumProperty);
         edges.push({
           id: `${model.namespace}.${enumOrConcept.name}#${notEnumProperty.name}`,
           type: 'floating',
@@ -115,7 +151,6 @@ export function modelToReactFlow(model: IModel) {
     // create edges for super-types
     const concept = decl as IConceptDeclaration;
     if (concept.superType) {
-      console.log('concept', concept);
       edges.push({
         id: `${model.namespace}.${concept.name}`,
         type: 'floating',
