@@ -1,7 +1,7 @@
 import Editor, { Monaco } from '@monaco-editor/react';
 import { debounce } from 'ts-debounce';
 
-import useStore from './store';
+import useStore from '../store';
 
 function ConcertoText() {
   const editorNamespace = useStore(state => state.editorNamespace);

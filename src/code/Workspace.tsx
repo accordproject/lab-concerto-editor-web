@@ -1,9 +1,7 @@
-import UrlForm from './forms/UrlForm';
-import useStore from './store';
+import useStore from '../store';
 
 function Workspace() {
   const modelText = useStore(state => state.modelText);
-  const layoutChanged = useStore(state => state.layoutChanged);
   const editorNamespace = useStore(state => state.editorNamespace);
   const editorNamespaceChanged = useStore(state => state.editorNamespaceChanged);
 
@@ -26,19 +24,6 @@ function Workspace() {
       <p className="panel-heading">
         Models
       </p>
-      <div className="panel-block">
-        <UrlForm />
-      </div>
-      <div className="panel-block">
-        <div className="buttons are-small">
-          <button className="button is-rounded" onClick={() => layoutChanged('TB')}>
-            Vertical Layout
-          </button>
-          <button className="button is-rounded" onClick={() => layoutChanged('LR')}>
-            Horizontal Layout
-          </button>
-        </div>
-      </div>
       {namespaces}
     </nav>
   </div>
