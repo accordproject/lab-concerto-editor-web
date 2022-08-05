@@ -126,11 +126,12 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             state.models[model.namespace].namespace = namespace
         }))
     },
-    ctoLoaded: (ctoTexts:string[]) => {
+    ctoLoaded: async (ctoTexts:string[]) => {
         const mm = new ModelManager();
-        ctoTexts.forEach( cto => {
-            mm.addCTOModel(cto);
+        ctoTexts.forEach( (cto,index) => {
+            mm.addCTOModel(cto, `file${index}.cto`, true );
         })
+        await mm.updateExternalModels();
         const ast:IModels = mm.getAst(true);
         get().modelsLoaded(ast);
     },
