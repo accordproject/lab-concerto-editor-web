@@ -1,7 +1,7 @@
 import { Node, Edge, MarkerType } from 'react-flow-renderer';
 import { IConceptDeclaration, IDecoratorNumber, IEnumDeclaration, IModel, IModels, IObjectProperty, IRelationshipProperty } from './metamodel/concerto.metamodel';
 import { EnumOrConcept, EdgeData, ConceptNodeData, EnumNodeData } from './types';
-import { isComplexType, isEnum } from './util';
+import { getLabel, isEnum, isObjectOrRelationshipProperty } from './modelUtil';
 
 /**
  * Converts the metamodel to a react-flow graph
@@ -51,7 +51,7 @@ export function modelToReactFlow(model: IModel) {
         label: decl.name,
         declaration: decl as IEnumDeclaration,
         type: {
-          $class: 'concerto.metamodel.TypeIdentifier',
+          $class: 'concerto.metamodel@1.0.0.TypeIdentifier',
           name: decl.name,
           namespace: model.namespace,
         }
@@ -61,7 +61,7 @@ export function modelToReactFlow(model: IModel) {
         label: decl.name,
         declaration: decl as IConceptDeclaration,
         type: {
-          $class: 'concerto.metamodel.TypeIdentifier',
+          $class: 'concerto.metamodel@1.0.0.TypeIdentifier',
           name: decl.name,
           namespace: model.namespace,
         },
@@ -91,7 +91,7 @@ export function modelToReactFlow(model: IModel) {
 
     // create edges for properties
     enumOrConcept.properties
-      .filter(property => isComplexType(property))
+      .filter(property => isObjectOrRelationshipProperty(property))
       .forEach(property => {
         const notEnumProperty = property as IObjectProperty | IRelationshipProperty;
         console.log('property', notEnumProperty);
@@ -101,7 +101,7 @@ export function modelToReactFlow(model: IModel) {
           markerStart: { type: MarkerType.Arrow, color: '#f00' },
           source: `${model.namespace}.${enumOrConcept.name}`,
           target: `${notEnumProperty.type.namespace}.${notEnumProperty.type.name}`,
-          label: `has a ${property.name}`,
+          label: getLabel(notEnumProperty),
           data: {
             owner: {
               name: enumOrConcept.name,

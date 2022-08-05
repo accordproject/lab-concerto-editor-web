@@ -9,9 +9,7 @@ import {
   IDateTimeProperty,
   IStringProperty,
   ILongProperty,
-  ITypeIdentifier,
-  IModel,
-  IDeclaration,
+  ITypeIdentifier
 } from './metamodel/concerto.metamodel';
 
 export type Point = {
@@ -58,16 +56,3 @@ export type PropertyType =
   | IDateTimeProperty
   | IStringProperty
   | ILongProperty;
-
-export type Notification = {
-  id: number;
-  subsystem: 'text' | 'model' | 'value';
-  kind: number;
-  message: string;
-  visible?: boolean;
-};
-
-export type VersionedModel = {
-  metamodel: IModel;
-  version: string;
-};

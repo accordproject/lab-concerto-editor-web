@@ -33,10 +33,17 @@ enum Department {
   o ENGINEERING
 }
 
-concept Employee extends Person {
-  o String firstName
-  o Department department
+concept Project identified {
+  o String name
+  o DateTime dueDate
 }
+
+concept Employee extends Person {
+  o String[] firstName optional
+  o Department department
+  --> Project[] projects
+}
+
 `])
   }, [ctoLoaded])
 
