@@ -5,7 +5,7 @@ import useStore from '../store';
 
 function ConcertoText() {
   const editorNamespace = useStore(state => state.editorNamespace);
-  const ctoText = useStore(state => editorNamespace ? state.modelText[editorNamespace] : '');
+  const ctoText = useStore(state => editorNamespace ? state.models[editorNamespace]?.text : '');
   const ctoModified = useStore(state => state.ctoModified);
 
   function handleEditorWillMount(monaco: Monaco) {

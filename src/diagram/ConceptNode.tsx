@@ -4,6 +4,7 @@ import { ConceptNodeData } from '../types';
 import { getClassDescription, getModifiers, getNameOfType } from '../modelUtil';
 
 import './Node.css';
+import { MAX_PROPERTIES } from '../diagramUtil';
 
 export default function ConceptNode({ data }: { data: ConceptNodeData }) {
     const declaration = data.declaration;
@@ -22,7 +23,7 @@ export default function ConceptNode({ data }: { data: ConceptNodeData }) {
                 <div>
                     <table className='properties'>
                         <tbody>
-                            {declaration.properties.map(prop => (
+                            {declaration.properties.slice(0,MAX_PROPERTIES).map(prop => (
                                 <tr key={prop.name}>
                                     <td key={prop.name}>{prop.name}</td>
                                     <td key={`${prop.name}-edit`}>
@@ -35,6 +36,7 @@ export default function ConceptNode({ data }: { data: ConceptNodeData }) {
                                     </td>
                                 </tr>
                             ))}
+                            {declaration.properties.length > MAX_PROPERTIES ?? <tr><td>...</td></tr> }
                         </tbody>
                     </table>
                 </div>

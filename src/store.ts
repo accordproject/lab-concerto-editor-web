@@ -26,7 +26,7 @@ import {
     IProperty,
     ITypeIdentifier,
 } from './metamodel/concerto.metamodel';
-import { getLayoutedElements, metamodelToReactFlow } from './diagram';
+import { getLayoutedElements, metamodelToReactFlow } from './diagramUtil';
 import { getErrorMessage } from './util';
 
 export type UpdateConcept = {
@@ -63,15 +63,25 @@ export type DeleteEnumPropertyReference = {
     id: string;
 };
 
-export type LayoutType = 'LR' | 'TB';
+export enum Orientation {
+    LEFT_TO_RIGHT = 'LR',
+    RIGHT_TO_LEFT = 'RL',
+    TOP_TO_BOTTOM = 'TB',
+    BOTTOM_TO_TOP = 'BT'
+}
+
 export type ViewType = 'Code' | 'Diagram';
+
+export type ModelEntry = {
+    text: string
+    model: IModel
+}
 
 interface EditorState {
     nodes: Node[]
     edges: Edge[]
-    modelText: Record<string, string>
-    models: Record<string, IModel>
-    layout: LayoutType
+    models: Record<string, ModelEntry>
+    layout: Orientation
     editorNamespace: string|undefined
     view: ViewType
     error: string|undefined
@@ -79,16 +89,18 @@ interface EditorState {
     onEdgesChange: OnEdgesChange
     onConnect: OnConnect
     namespaceChanged: (model: IModel, namespace: string) => void
+    namespaceRemoved: (namespace:string) => void
     ctoTextLoaded: (ctoText: string) => void
     modelsLoaded: (models: IModels) => void
     ctoModified: (ctoText:string) => void
     setNodes: (nodes:Node[]) => void
     setEdges: (edges:Edge[]) => void
     clearModels: () => void
-    layoutChanged: (name:LayoutType) => void
+    layoutChanged: (name:Orientation) => void
     editorNamespaceChanged: (namespace:string) => void
     viewChanged: (view:ViewType) => void
     errorChanged: (error:string|undefined) => void
+    modelsModified: () => void
 }
 
 // export const setVersion = createAction<string>('setVersion');
@@ -124,8 +136,7 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     nodes: [],
     edges: [],
     models: {},
-    modelText: {},
-    layout: 'LR',
+    layout: Orientation.LEFT_TO_RIGHT,
     editorNamespace: undefined,
     view: 'Code',
     error: undefined,
@@ -146,8 +157,20 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     },
     namespaceChanged: (model, namespace) => {
         set(produce((state: EditorState) => {
-            state.models[model.namespace].namespace = namespace
+            state.models[model.namespace].model.namespace = namespace
         }))
+    },
+    namespaceRemoved: (namespace) => {
+        set(produce((state: EditorState) => {
+            const newModels:Record<string, ModelEntry> = {};
+            Object.keys(state.models).forEach( key => {
+                if(key!==namespace) {
+                    newModels[key] = state.models[key]
+                }
+            })
+            state.models = newModels;
+        }))
+        get().modelsModified();
     },
     ctoTextLoaded: async (ctoText:string) => {
         get().clearModels();
@@ -165,15 +188,22 @@ const useEditorStore = create<EditorState>()((set, get) => ({
         }
     },
     ctoModified: (ctoText:string) => {
+        const model = Parser.parse(ctoText, undefined, {skipLocationNodes: true}) as IModel;
+        set(produce((state: EditorState) => {
+            state.models[model.namespace] = {
+                text: ctoText,
+                model: model
+            }
+        }))
+        get().modelsModified();
+    },
+    modelsModified: () => {
         try {
-            const model = Parser.parse(ctoText, undefined, {skipLocationNodes: true}) as IModel;
             set(produce((state: EditorState) => {
-                state.modelText[model.namespace] = ctoText;
-                state.models[model.namespace] = model;
                 state.error = undefined;
                 const unresolvedAst = {
                     $class: 'concerto.metamodel@1.0.0.IModels',
-                    models: Object.values(state.models)
+                    models: Object.values(state.models).map( modelEntry => modelEntry.model)
                 } as IModels;
                 const mm = new ModelManager();
                 mm.fromAst(unresolvedAst);
@@ -191,7 +221,6 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     },
     clearModels: () => {
         set(produce((state: EditorState) => {
-            state.modelText = {};
             state.models = {};
             state.nodes = [];
             state.edges = [];
@@ -199,17 +228,16 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     },
     modelsLoaded: (models:IModels) => {
         get().clearModels();
-        const newModels:Record<string, IModel> = {};
         models.models.forEach( m => {
-            newModels[m.namespace] = m;
             set(produce((state: EditorState) => {
                 const ctoText = Printer.toCTO(m);
-                state.modelText[m.namespace] = ctoText;
-                const {nodes, edges} = metamodelToReactFlow(models);
-                state.nodes = nodes;
-                state.edges = edges;
+                state.models[m.namespace] = {
+                    text: ctoText,
+                    model: m
+                }
             }))    
         })
+        get().modelsModified();
     },
     setNodes: (nodes:Node[]) => {
         set(produce((state: EditorState) => {
@@ -221,9 +249,9 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             state.edges = edges;
         })) 
     },
-    layoutChanged: (layout:LayoutType) => {
+    layoutChanged: (layout:Orientation) => {
         set(produce((state: EditorState) => {
-            const {nodes, edges } = getLayoutedElements(state.nodes, state.edges);
+            const {nodes, edges } = getLayoutedElements(state.nodes, state.edges, state.layout);
             state.layout = layout;
             state.nodes = nodes;
             state.edges = edges;

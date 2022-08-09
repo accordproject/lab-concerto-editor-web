@@ -1,23 +1,40 @@
 import useStore from '../store';
 
 function Workspace() {
-  const modelText = useStore(state => state.modelText);
+  const models = useStore(state => state.models);
+  const ctoModified = useStore(state => state.ctoModified);
   const editorNamespace = useStore(state => state.editorNamespace);
+  const namespaceRemoved = useStore(state => state.namespaceRemoved);
   const editorNamespaceChanged = useStore(state => state.editorNamespaceChanged);
 
   function onChangeNamespace(ns: string) {
     editorNamespaceChanged(ns)
   }
 
-  const namespaces = Object.keys(modelText).map(key => {
+  function onDeleteNamespace(ns: string) {
+    namespaceRemoved(ns)
+  }
+
+  const namespaces = Object.keys(models).map(key => {
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
-    return <a key={key} onClick={() => onChangeNamespace(key)} className={editorNamespace === key ? 'panel-block is-active' : 'panel-block'}>
+    return <a key={key} className={editorNamespace === key ? 'panel-block is-active' : 'panel-block'}>
+      <div onClick={() => onChangeNamespace(key)}>
       <span className="panel-icon">
         <i className="fas fa-book" aria-hidden="true"></i>
       </span>
       {key}
-    </a>
+      </div>
+      <span className="panel-icon" style={{marginLeft: 100}} onClick={() => onDeleteNamespace(key)}>
+        <i className="fas fa-trash-can" aria-hidden="true"></i>
+      </span>
+      </a>
   });
+
+  function addModel() {
+    const ns = `model${Object.keys(models).length}@1.0.0`;
+    ctoModified(`namespace ${ns}`);
+    onChangeNamespace(ns);
+  }
 
   return <div className='workspace'>
     <nav className="panel">
@@ -26,6 +43,9 @@ function Workspace() {
       </p>
       {namespaces}
     </nav>
+    <button className="button is-rounded" onClick={() => addModel()}>
+      New
+    </button>
   </div>
 }
 

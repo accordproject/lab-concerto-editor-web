@@ -1,14 +1,20 @@
-import useStore from '../store';
+import useStore, { Orientation } from '../store';
 
 function DiagramTools() {
     const layoutChanged = useStore((state) => state.layoutChanged);
     return (
         <div className="buttons are-small">
-            <button className="button is-rounded" onClick={() => layoutChanged('TB')}>
-                Vertical Layout
+            <button className="button is-rounded" onClick={() => layoutChanged(Orientation.TOP_TO_BOTTOM)}>
+                Layout Top to Bottom
             </button>
-            <button className="button is-rounded" onClick={() => layoutChanged('LR')}>
-                Horizontal Layout
+            <button className="button is-rounded" onClick={() => layoutChanged(Orientation.BOTTOM_TO_TOP)}>
+                Layout Bottom to Top
+            </button>
+            <button className="button is-rounded" onClick={() => layoutChanged(Orientation.LEFT_TO_RIGHT)}>
+                Layout Left to Right
+            </button>
+            <button className="button is-rounded" onClick={() => layoutChanged(Orientation.RIGHT_TO_LEFT)}>
+                Layout Right to Left
             </button>
         </div>
     );

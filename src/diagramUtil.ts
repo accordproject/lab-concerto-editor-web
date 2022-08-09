@@ -3,15 +3,16 @@ import dagre from 'dagre';
 import { IConceptDeclaration, IDecoratorNumber, IEnumDeclaration, IModel, IModels, IObjectProperty, IRelationshipProperty } from './metamodel/concerto.metamodel';
 import { EnumOrConcept, EdgeData, ConceptNodeData, EnumNodeData } from './types';
 import { getLabel, isEnum, isObjectOrRelationshipProperty } from './modelUtil';
+import { Orientation } from './store';
 
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
+export const MAX_PROPERTIES = 10;
 
-const nodeWidth = 350;
-const nodeHeight = 120;
-
-export function getLayoutedElements(nodes: Node[], edges: Edge[], direction = 'TB') {
-  const isHorizontal = direction === 'LR';
+export function getLayoutedElements(nodes: Node[], edges: Edge[], direction:Orientation) {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+  const nodeWidth = 350;
+  const nodeHeight = 120;
+  const isHorizontal = direction === Orientation.LEFT_TO_RIGHT || Orientation.RIGHT_TO_LEFT;
   dagreGraph.setGraph({ rankdir: direction });
 
   nodes.forEach((node: Node) => {
