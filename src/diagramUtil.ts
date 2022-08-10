@@ -177,3 +177,52 @@ export function modelToReactFlow(model: IModel) {
     edges
   };
 }
+
+// export function reactFlowToMetamodel(models:IModels, nodes: Node[]): IModels {
+//   const newModels: IModels = {
+//     $class: 'concerto.metamodel.Models',
+//     models: [],
+//   };
+
+//   nodes.forEach(node => {
+//     const decl = getModelDeclarationFromElementId(model, node);
+//     if (decl) {
+//       const newDecl = JSON.parse(JSON.stringify(decl)) as IDeclaration;
+//       const decorators = newDecl.decorators ? newDecl.decorators : [];
+//       const diagramDecorator = decorators.find(d => d.name === 'diagram');
+//       const nodePosition = node.__rf as Node__rf;
+//       const positionDecoratorArguments = [
+//         {
+//           $class: 'concerto.metamodel.DecoratorString',
+//           value: 'x',
+//         },
+//         {
+//           $class: 'concerto.metamodel.DecoratorNumber',
+//           value: Math.trunc(nodePosition.position.x),
+//         },
+//         {
+//           $class: 'concerto.metamodel.DecoratorString',
+//           value: 'y',
+//         },
+//         {
+//           $class: 'concerto.metamodel.DecoratorNumber',
+//           value: Math.trunc(nodePosition.position.y),
+//         },
+//       ];
+//       if (diagramDecorator) {
+//         diagramDecorator.arguments = positionDecoratorArguments;
+//       } else {
+//         decorators.push({
+//           $class: 'concerto.metamodel.Decorator',
+//           name: 'diagram',
+//           arguments: positionDecoratorArguments,
+//         });
+//       }
+//       newDecl.decorators = decorators;
+//       if (newModel.declarations) {
+//         newModel.declarations.push(newDecl);
+//       }
+//     }
+//   });
+//   return newModel;
+// }
