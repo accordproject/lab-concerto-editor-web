@@ -30,7 +30,7 @@ function UrlForm({ active, onClose }: { active: boolean, onClose: (a: boolean) =
                             try {
                                 const response = await fetch(values.url);
                                 const cto = await response.text();
-                                ctoTextLoaded(cto);
+                                ctoTextLoaded([cto]);
                                 onClose(false);
                             }
                             catch (err) {

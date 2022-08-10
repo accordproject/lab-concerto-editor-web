@@ -39,7 +39,7 @@ function App() {
   const [displayModal, setDisplayModal] = useState<boolean>(false);
 
   useEffect(() => {
-    ctoTextLoaded(SAMPLE_MODEL)
+    ctoTextLoaded([SAMPLE_MODEL])
   }, [ctoTextLoaded])
 
   return (
@@ -52,7 +52,7 @@ function App() {
           v1.0.0
         </p>
         <div className="buttons">
-          <button className="button" onClick={() => ctoTextLoaded(SAMPLE_MODEL)}>Load Sample</button>
+          <button className="button" onClick={() => ctoTextLoaded([SAMPLE_MODEL])}>Load Sample</button>
           <button className="button" onClick={() => setDisplayModal(true)}>Load from URL</button>
         </div>
         <Notification />

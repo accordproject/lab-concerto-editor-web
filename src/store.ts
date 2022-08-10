@@ -91,7 +91,7 @@ interface EditorState {
     onConnect: OnConnect
     namespaceChanged: (model: IModel, namespace: string) => void
     namespaceRemoved: (namespace: string) => void
-    ctoTextLoaded: (ctoText: string) => void
+    ctoTextLoaded: (ctoTexts: string[]) => void
     modelsLoaded: (models: IModels) => void
     ctoModified: (ctoText: string) => void
     setNodes: (nodes: Node[]) => void
@@ -181,18 +181,20 @@ const useEditorStore = create<EditorState>()((set, get) => ({
         }))
         get().modelsModified();
     },
-    ctoTextLoaded: async (ctoText: string) => {
+    ctoTextLoaded: async (ctoTexts: string[]) => {
         get().clearModels();
         const mm = new ModelManager();
         try {
-            // we do this convoluted thing so that we can use skipLocationNodes
-            const modelAst = Parser.parse(ctoText, undefined, { skipLocationNodes: true }) as IModel;
-            const model = new ModelFile(mm, modelAst);
-            mm.addModelFile(model, undefined, undefined, true);
+            ctoTexts.forEach( ctoText => {
+                // we do this convoluted thing so that we can use skipLocationNodes
+                const modelAst = Parser.parse(ctoText, undefined, { skipLocationNodes: true }) as IModel;
+                const model = new ModelFile(mm, modelAst);
+                mm.addModelFile(model, undefined, undefined, true);
+            })
             await mm.updateExternalModels();
             const ast: IModels = mm.getAst(true);
             get().modelsLoaded(ast);
-            get().editorNamespaceChanged(model.namespace);
+            get().editorNamespaceChanged(ast.models[0].namespace);
             get().errorChanged(undefined);
         }
         catch (err) {

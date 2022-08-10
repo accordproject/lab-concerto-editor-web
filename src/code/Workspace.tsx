@@ -1,5 +1,7 @@
 import useStore from '../store';
 
+import Dropzone from './Dropzone';
+
 function Workspace() {
   const models = useStore(state => state.models);
   const ctoModified = useStore(state => state.ctoModified);
@@ -46,6 +48,7 @@ function Workspace() {
     <button className="button is-rounded" onClick={() => addModel()}>
       New
     </button>
+    <Dropzone/>
   </div>
 }
 
