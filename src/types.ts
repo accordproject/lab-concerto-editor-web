@@ -35,6 +35,7 @@ export type EdgeData = {
   owner: ITypeIdentifier;
   super?: ITypeIdentifier;
   propertyName?: string;
+  type: string;
 };
 
 export type EnumOrConcept = IEnumDeclaration | IConceptDeclaration;

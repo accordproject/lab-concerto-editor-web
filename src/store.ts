@@ -306,16 +306,8 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                     }
                     const positionDecoratorArguments = [
                         {
-                            $class: 'concerto.metamodel.DecoratorString',
-                            value: 'x',
-                        },
-                        {
                             $class: 'concerto.metamodel.DecoratorNumber',
                             value: Math.trunc(position.x),
-                        },
-                        {
-                            $class: 'concerto.metamodel.DecoratorString',
-                            value: 'y',
                         },
                         {
                             $class: 'concerto.metamodel.DecoratorNumber',

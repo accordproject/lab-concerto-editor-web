@@ -11,21 +11,25 @@ import DiagramHost from './diagram/DiagramHost';
 
 const SAMPLE_MODEL = `namespace org.acme
 
+@diagram(180,29)
 abstract concept Person identified by email {
   o String email
 }
 
+@diagram(152,249)
 enum Department {
   o HR
   o SALES
   o ENGINEERING
 }
 
+@diagram(1255,47)
 concept Project identified {
   o String name
   o DateTime dueDate
 }
 
+@diagram(661,139)
 concept Employee extends Person {
   o String[] firstName optional
   o Department department
