@@ -9,55 +9,42 @@ import { useEffect, useState } from 'react';
 import UrlForm from './forms/UrlForm';
 import DiagramHost from './diagram/DiagramHost';
 
-const SAMPLE_MODEL = `namespace org.acme
-
-@diagram(180,29)
-abstract concept Person identified by email {
-  o String email
-}
-
-@diagram(152,249)
-enum Department {
-  o HR
-  o SALES
-  o ENGINEERING
-}
-
-@diagram(1255,47)
-concept Project identified {
-  o String name
-  o DateTime dueDate
-}
-
-@diagram(661,139)
-concept Employee extends Person {
-  o String[] firstName optional
-  o Department department
-  --> Project[] projects
-}`;
-
 function App() {
   const viewChanged = useStore((state) => state.viewChanged);
   const view = useStore((state) => state.view);
-  const ctoTextLoaded = useStore((state) => state.ctoTextLoaded);
+  const init = useStore((state) => state.init);
+  const loadSampleRequested = useStore((state) => state.loadSampleRequested);
+  const saveRequested = useStore((state) => state.saveRequested);
+  const downloadRequested = useStore((state) => state.downloadRequested);
+
   const [displayModal, setDisplayModal] = useState<boolean>(false);
 
   useEffect(() => {
-    ctoTextLoaded([SAMPLE_MODEL])
-  }, [ctoTextLoaded])
+    init()
+  }, [init])
+
+  function onSave() {
+    saveRequested();
+  }
+
+  function onDownload() {
+    downloadRequested();
+  }
 
   return (
     <section className="hero">
       <div className="hero-body">
         <p className="title">
-          Concerto Model Editor
+          Concerto Playground
         </p>
         <p className="subtitle">
           v1.0.0
         </p>
         <div className="buttons">
-          <button className="button" onClick={() => ctoTextLoaded([SAMPLE_MODEL])}>Load Sample</button>
+          <button className="button" onClick={() => loadSampleRequested()}>Load Sample</button>
           <button className="button" onClick={() => setDisplayModal(true)}>Load from URL</button>
+          <button className="button" onClick={onSave}>Save to Browser</button>
+          <button className="button" onClick={onDownload}>Download</button>
         </div>
         <Notification />
         <UrlForm active={displayModal} onClose={setDisplayModal}/>

@@ -1,5 +1,6 @@
 import create from 'zustand'
 import produce from 'immer';
+import { saveAs } from 'file-saver';
 import { ModelFile, ModelManager, ModelUtil } from '@accordproject/concerto-core';
 import { Printer, Parser } from '@accordproject/concerto-cto';
 import { IModels } from './metamodel/concerto.metamodel';
@@ -29,6 +30,36 @@ import {
 } from './metamodel/concerto.metamodel';
 import { getLayoutedElements, metamodelToReactFlow } from './diagramUtil';
 import { getErrorMessage } from './util';
+import JSZip from 'jszip';
+
+const SAMPLE_MODEL = `namespace org.acme@1.0.0
+
+@diagram(180,29)
+abstract concept Person identified by email {
+  o String email
+}
+
+@diagram(152,249)
+enum Department {
+  o HR
+  o SALES
+  o ENGINEERING
+}
+
+@diagram(1255,47)
+concept Project identified {
+  o String name
+  o DateTime dueDate
+}
+
+@diagram(661,139)
+concept Employee extends Person {
+  o String[] firstName optional
+  o Department department
+  --> Project[] projects
+}`;
+
+const STORAGE_KEY = "concerto-playground-models";
 
 export type UpdateConcept = {
     declaration: IConceptDeclaration;
@@ -103,6 +134,10 @@ interface EditorState {
     errorChanged: (error: string | undefined) => void
     modelsModified: () => void
     positionChanged: (fullyQualifiedName: string, position: XYPosition) => void
+    saveRequested: () => void
+    downloadRequested: () => void
+    init: () => void
+    loadSampleRequested: () => void
 }
 
 // export const setVersion = createAction<string>('setVersion');
@@ -185,7 +220,7 @@ const useEditorStore = create<EditorState>()((set, get) => ({
         get().clearModels();
         const mm = new ModelManager();
         try {
-            ctoTexts.forEach( ctoText => {
+            ctoTexts.forEach(ctoText => {
                 // we do this convoluted thing so that we can use skipLocationNodes
                 const modelAst = Parser.parse(ctoText, undefined, { skipLocationNodes: true }) as IModel;
                 const model = new ModelFile(mm, modelAst);
@@ -323,9 +358,44 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                     state.models[model.model.namespace].text = ctoText;
                     state.models[model.model.namespace].model = model.model;
                 }
-            }    
+            }
         }))
-    }
+    },
+    init: () => {
+        const value = localStorage.getItem(STORAGE_KEY);
+        if (value) {
+            set(produce((state: EditorState) => {
+                try {
+                    state.models = JSON.parse(value);
+                }
+                catch (err) {
+                    console.log(err);
+                }
+            }))
+            get().modelsModified();
+        }
+        else {
+            get().loadSampleRequested()
+        }
+    },
+    loadSampleRequested: () => {
+        get().ctoTextLoaded([SAMPLE_MODEL])
+    },
+    saveRequested: () => {
+        const value = JSON.stringify(get().models);
+        localStorage.setItem(STORAGE_KEY, value);
+    },
+    downloadRequested: () => {
+        const zip = new JSZip();
+        const models = get().models;
+        Object.keys(models).forEach(key => {
+            zip.file(`${key}.cto`, models[key].text);
+        })
+        zip.generateAsync({ type: "blob" })
+            .then(function (blob) {
+                saveAs(blob, "models.zip");
+            });
+    },
 }))
 
 export default useEditorStore;
