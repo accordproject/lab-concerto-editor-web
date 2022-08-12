@@ -32,7 +32,9 @@ import { getLayoutedElements, metamodelToReactFlow } from './diagramUtil';
 import { getErrorMessage } from './util';
 import JSZip from 'jszip';
 
-const SAMPLE_MODEL = `namespace org.acme@1.0.0
+const SAMPLE_MODEL_1 = `namespace org.acme@1.0.0
+
+import {Project} from org.acme.project@2.0.0
 
 @diagram(180,29)
 abstract concept Person identified by email {
@@ -46,18 +48,29 @@ enum Department {
   o ENGINEERING
 }
 
-@diagram(1255,47)
-concept Project identified {
-  o String name
-  o DateTime dueDate
-}
-
 @diagram(661,139)
 concept Employee extends Person {
   o String[] firstName optional
   o Department department
   --> Project[] projects
 }`;
+
+const SAMPLE_MODEL_2 = `
+namespace org.acme.project@2.0.0
+
+@diagram(725,429)
+enum Priority {
+  o HIGH
+  o MEDIUM
+  o LOW
+}
+
+@diagram(1255,47)
+concept Project identified {
+  o String name
+  o DateTime dueDate
+  o Priority priority optional
+}`
 
 const STORAGE_KEY = "concerto-playground-models";
 
@@ -107,6 +120,7 @@ export type ViewType = 'Code' | 'Diagram';
 export type ModelEntry = {
     text: string
     model: IModel
+    visible: boolean
 }
 
 interface EditorState {
@@ -122,6 +136,7 @@ interface EditorState {
     onConnect: OnConnect
     namespaceChanged: (model: IModel, namespace: string) => void
     namespaceRemoved: (namespace: string) => void
+    namespaceVisibilityToggled: (namespace: string) => void
     ctoTextLoaded: (ctoTexts: string[]) => void
     modelsLoaded: (models: IModels) => void
     ctoModified: (ctoText: string) => void
@@ -241,7 +256,8 @@ const useEditorStore = create<EditorState>()((set, get) => ({
         set(produce((state: EditorState) => {
             state.models[model.namespace] = {
                 text: ctoText,
-                model: model
+                model: model,
+                visible: true
             }
         }))
         get().modelsModified();
@@ -257,7 +273,7 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                 const mm = new ModelManager();
                 mm.fromAst(unresolvedAst);
                 const resolvedAst = mm.getAst(true);
-                const { nodes, edges } = metamodelToReactFlow(resolvedAst);
+                const { nodes, edges } = metamodelToReactFlow(resolvedAst, state.models);
                 state.nodes = nodes;
                 state.edges = edges;
             }))
@@ -282,7 +298,8 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                 const ctoText = Printer.toCTO(m);
                 state.models[m.namespace] = {
                     text: ctoText,
-                    model: m
+                    model: m,
+                    visible: true
                 }
             }))
         })
@@ -379,7 +396,7 @@ const useEditorStore = create<EditorState>()((set, get) => ({
         }
     },
     loadSampleRequested: () => {
-        get().ctoTextLoaded([SAMPLE_MODEL])
+        get().ctoTextLoaded([SAMPLE_MODEL_1,SAMPLE_MODEL_2])
     },
     saveRequested: () => {
         const value = JSON.stringify(get().models);
@@ -395,6 +412,13 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             .then(function (blob) {
                 saveAs(blob, "models.zip");
             });
+    },
+    namespaceVisibilityToggled: (namespace:string) => {
+        set(produce((state: EditorState) => {
+            state.models[namespace].visible = !state.models[namespace].visible;
+            console.log(namespace, state.models[namespace].visible);
+        }))
+        get().modelsModified();
     },
 }))
 

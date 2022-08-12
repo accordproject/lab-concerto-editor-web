@@ -10,8 +10,6 @@ function FloatingEdge({ id, source, target, markerEnd, style, label, data }:Edge
     return null;
   }
 
-  console.log('data', data);
-
   const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(sourceNode, targetNode);
 
   const [centerX, centerY] = getEdgeCenter({

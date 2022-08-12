@@ -4,7 +4,7 @@ import dagre from 'dagre';
 import { IConceptDeclaration, IDecoratorNumber, IEnumDeclaration, IModel, IModels, IObjectProperty, IRelationshipProperty } from './metamodel/concerto.metamodel';
 import { EnumOrConcept, EdgeData, ConceptNodeData, EnumNodeData, Point } from './types';
 import { getLabel, isEnum, isObjectOrRelationshipProperty } from './modelUtil';
-import { Orientation } from './store';
+import { ModelEntry, Orientation } from './store';
 
 export const MAX_PROPERTIES = 10;
 
@@ -49,31 +49,15 @@ export function getLayoutedElements(nodes: Node[], edges: Edge[], direction:Orie
  * @param model the IModel
  * @returns an object with edges and nodes
  */
-export function metamodelToReactFlow(models: IModels) {
+export function metamodelToReactFlow(models: IModels, records:Record<string,ModelEntry>) {
   let nodes: Node[] = [];
   let edges: Edge[] = [];
   models.models.forEach((model) => {
-    // const data: NodeData = {
-    //   label: model.namespace,
-    //   type: {
-    //     $class: 'concerto.metamodel.IModel',
-    //     name: model.namespace,
-    //     namespace: model.namespace,
-    //   },
-    // } as NodeData;
-    // nodes.push({
-    //   id: model.namespace,
-    //   type: 'group',
-    //   data,
-    //   style: {
-    //     width: 170,
-    //     height: 140,
-    //   },
-    //   position: { x: 0, y: 0 },
-    // });
-    const modelDiagram = modelToReactFlow(model);
-    nodes = nodes.concat(modelDiagram.nodes);
-    edges = edges.concat(modelDiagram.edges);
+    if(records[model.namespace].visible) {
+      const modelDiagram = modelToReactFlow(model);
+      nodes = nodes.concat(modelDiagram.nodes);
+      edges = edges.concat(modelDiagram.edges);  
+    }
   });
   return { nodes, edges };
 }
