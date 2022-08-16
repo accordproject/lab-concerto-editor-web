@@ -5,10 +5,10 @@ import Notification from './Notification';
 
 import useStore from './store';
 import { useEffect, useState } from 'react';
-// import UrlForm from './forms/UrlForm';
 import DiagramHost from './diagram/DiagramHost';
 import CodeHost from './code/CodeHost';
 import FormHost from './form/FormHost';
+import LoadFromUrlForm from './form/LoadFromUrlForm';
 
 function App() {
   const viewChanged = useStore((state) => state.viewChanged);
@@ -48,7 +48,7 @@ function App() {
           <button className="button" onClick={onDownload}>Download</button>
         </div>
         <Notification />
-        {/* <UrlForm active={displayModal} onClose={setDisplayModal}/> */}
+        <LoadFromUrlForm active={displayModal} onClose={setDisplayModal}/>
         <div className="container is-fluid">
           <div className="columns">
             <div className="column">
