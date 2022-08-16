@@ -1,19 +1,8 @@
+import NamespaceVisibility from '../NamespaceVisibility';
 import useStore, { Orientation } from '../store';
 
 function DiagramTools() {
     const layoutChanged = useStore((state) => state.layoutChanged);
-    const models = useStore(state => state.models);
-    const namespaceVisibilityToggled = useStore(state => state.namespaceVisibilityToggled);
-    function onSelect(key:string) {
-        namespaceVisibilityToggled(key);
-    }
-
-    const namespaces = Object.keys(models).map(key => {
-        return <li key={key}>
-            <input checked={models[key].visible} type="checkbox" onClick={() => onSelect(key)}/>
-            {key}
-        </li>
-    });
 
     return (
         <div>
@@ -32,9 +21,7 @@ function DiagramTools() {
                 </button>
             </div>
             <div>
-            <ul>
-                {namespaces}
-            </ul>
+            <NamespaceVisibility/>
             </div>
         </div>
     );

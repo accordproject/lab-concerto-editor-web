@@ -1,13 +1,14 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
 import 'bulma/css/bulma.min.css';
-import CodeHost from './code/CodeHost';
 import Notification from './Notification';
 
 import useStore from './store';
 import { useEffect, useState } from 'react';
-import UrlForm from './forms/UrlForm';
+// import UrlForm from './forms/UrlForm';
 import DiagramHost from './diagram/DiagramHost';
+import CodeHost from './code/CodeHost';
+import FormHost from './form/FormHost';
 
 function App() {
   const viewChanged = useStore((state) => state.viewChanged);
@@ -47,17 +48,18 @@ function App() {
           <button className="button" onClick={onDownload}>Download</button>
         </div>
         <Notification />
-        <UrlForm active={displayModal} onClose={setDisplayModal}/>
+        {/* <UrlForm active={displayModal} onClose={setDisplayModal}/> */}
         <div className="container is-fluid">
           <div className="columns">
             <div className="column">
               <div className="tabs is-centered is-toggle is-toggle-rounded">
                 <ul>
                   <li className={view === 'Code' ? 'is-active' : undefined}><a onClick={() => viewChanged('Code')}>Code</a></li>
+                  <li className={view === 'Form' ? 'is-active' : undefined}><a onClick={() => viewChanged('Form')}>Form</a></li>
                   <li className={view === 'Diagram' ? 'is-active' : undefined}><a onClick={() => viewChanged('Diagram')}>Diagram</a></li>
                 </ul>
               </div>
-              {view === 'Code' ? <CodeHost /> : <DiagramHost />}
+              {view === 'Code' ? <CodeHost /> : view === 'Diagram' ? <DiagramHost /> : <FormHost/>}
             </div>
           </div>
         </div>

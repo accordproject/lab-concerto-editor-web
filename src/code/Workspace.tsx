@@ -1,3 +1,4 @@
+import { IModel } from '../metamodel/concerto.metamodel';
 import useStore from '../store';
 
 import Dropzone from './Dropzone';
@@ -9,8 +10,8 @@ function Workspace() {
   const namespaceRemoved = useStore(state => state.namespaceRemoved);
   const editorNamespaceChanged = useStore(state => state.editorNamespaceChanged);
 
-  function onChangeNamespace(ns: string) {
-    editorNamespaceChanged(ns)
+  function onChangeNamespace(model: IModel) {
+    editorNamespaceChanged(model)
   }
 
   function onDeleteNamespace(ns: string) {
@@ -19,8 +20,8 @@ function Workspace() {
 
   const namespaces = Object.keys(models).map(key => {
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
-    return <a key={key} className={editorNamespace === key ? 'panel-block is-active' : 'panel-block'}>
-      <div onClick={() => onChangeNamespace(key)}>
+    return <a key={key} className={editorNamespace?.namespace === key ? 'panel-block is-active' : 'panel-block'}>
+      <div onClick={() => onChangeNamespace(models[key].model)}>
       <span className="panel-icon">
         <i className="fas fa-book" aria-hidden="true"></i>
       </span>
@@ -35,7 +36,6 @@ function Workspace() {
   function addModel() {
     const ns = `model${Object.keys(models).length}@1.0.0`;
     ctoModified(`namespace ${ns}`);
-    onChangeNamespace(ns);
   }
 
   return <div className='workspace'>
