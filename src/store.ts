@@ -1,9 +1,9 @@
 import create from 'zustand'
 import produce from 'immer';
 import { saveAs } from 'file-saver';
-import { ModelFile, ModelManager, ModelUtil } from '@accordproject/concerto-core';
+import { ClassDeclaration, ModelFile, ModelManager, ModelUtil, Property } from '@accordproject/concerto-core';
 import { Printer, Parser } from '@accordproject/concerto-cto';
-import { IModels } from './metamodel/concerto.metamodel';
+import { IDeclaration, IModels } from './metamodel/concerto.metamodel';
 import assert from 'assert';
 
 import {
@@ -31,7 +31,7 @@ import {
 import { getLayoutedElements, metamodelToReactFlow } from './diagramUtil';
 import { getErrorMessage } from './util';
 import JSZip from 'jszip';
-import { resolveNs } from 'dns';
+import { isEnum } from './modelUtil';
 
 const SAMPLE_MODEL_1 = `namespace org.acme@1.0.0
 
@@ -40,6 +40,9 @@ import {Project} from org.acme.project@2.0.0
 @diagram(180,29)
 abstract concept Person identified by email {
   o String email
+  o String firstName
+  o String lastName
+  o Integer age
 }
 
 @diagram(152,249)
@@ -51,7 +54,6 @@ enum Department {
 
 @diagram(661,139)
 concept Employee extends Person {
-  o String[] firstName optional
   o Department department
   --> Project[] projects
 }`;
@@ -135,6 +137,12 @@ interface EditorState {
 
     // enum actions
     enumPropertyUpdated: (namespace: string, enumName: string, propertyName: string, property: IEnumProperty) => void
+
+    // selectors
+    selectClassDeclaration: (conceptFqn: string) => ClassDeclaration
+    selectDeclarationFullyQualfiedNames: (filterFunc?: (value: IDeclaration) => boolean) => (string | undefined)[]
+    selectPropertyNames: (conceptFqn: string, filterFunc?: (value: Property) => boolean) => string[]
+    selectModelManager: () => ModelManager;
 }
 
 const useEditorStore = create<EditorState>()((set, get) => ({
@@ -294,7 +302,7 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                     const subParts = parts[1].split('.');
                     state.editorConcept = state.editorNamespace?.declarations?.find(decl => decl.name === subParts[0]) as IConceptDeclaration | IEnumDeclaration | undefined;
                     if (subParts.length === 2) {
-                        state.editorProperty = state.editorConcept?.properties?.find(prop => prop.name === subParts[1])
+                        state.editorProperty = state.editorConcept?.properties?.find(prop => prop.name === subParts[1]);
                     }
                     else {
                         state.editorProperty = undefined;
@@ -456,6 +464,28 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             state.models[modelEntry.model.namespace].text = ctoText;
         }))
         get().modelsModified();
+    },
+    selectDeclarationFullyQualfiedNames: (filterFunc?: (value: IDeclaration) => boolean) => {
+        return Object.values(get().models).flatMap(
+            modelEntry => modelEntry.model.declarations?.filter(
+                d => filterFunc ? filterFunc(d) : () => true).map(
+                    concept => `${modelEntry.model.namespace}.${concept.name}`));
+    },
+    selectClassDeclaration: (conceptFqn: string) => {
+        return get().selectModelManager().getType(conceptFqn);
+    },
+    selectPropertyNames: (conceptFqn: string, filterFunc?: (value: Property) => boolean) => {
+        const classDecl:ClassDeclaration = get().selectClassDeclaration(conceptFqn);
+        return classDecl.getProperties().filter( p => filterFunc ? filterFunc(p) : () => true ).map( prop => prop.name);
+    },
+    selectModelManager: () => {
+        const unresolvedAst = {
+            $class: 'concerto.metamodel@1.0.0.IModels',
+            models: Object.values(get().models).map(modelEntry => modelEntry.model)
+        } as IModels;
+        const mm = new ModelManager();
+        mm.fromAst(unresolvedAst);
+        return mm;
     }
 }))
 

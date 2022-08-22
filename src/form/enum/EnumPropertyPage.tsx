@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
@@ -26,17 +26,21 @@ const EnumPropertyPage = ({ model, enumDeclaration, property }: { model: IModel,
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors }
     } = useForm<IEnumProperty>({
         resolver: yupResolver(validationSchema)
     });
+
+    useEffect(() => {
+        reset(property);
+    }, [property, reset]);
 
     const onSubmit = (data: any) => {
         const newData = {
             ...property,
             ...data
         }
-        console.log(newData);
         enumPropertyUpdated(model.namespace, enumDeclaration.name, property.name, newData);
     };
 

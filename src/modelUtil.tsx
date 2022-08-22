@@ -70,6 +70,11 @@ export function isEnum(obj: IConcept) {
   return getClass(obj).endsWith('EnumDeclaration');
 }
 
+export function isString(property: IProperty) {
+  return getClass(property) === 'concerto.metamodel@1.0.0.StringProperty' &&
+    !property.isArray
+}
+
 export function getModifiers(property: PropertyOrEnum) {
   const optional = (property as IProperty).isOptional ? 'optional' : '';
   const array = (property as IProperty).isArray ? 'array' : '';

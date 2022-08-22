@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
@@ -26,10 +26,15 @@ const NamespacePage = ({ model }: { model: IModel }) => {
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors }
     } = useForm<IModel>({
         resolver: yupResolver(validationSchema)
     });
+
+    useEffect(() => {
+        reset(model);
+    }, [model, reset]);
 
     const onSubmit = (data: any) => {
         namespaceNameUpdated(model, data.name);

@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
@@ -28,12 +28,17 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
 
     const {
         register,
+        reset,
         control,
         handleSubmit,
         formState: { errors }
     } = useForm<IProperty>({
         resolver: yupResolver(validationSchema)
     });
+
+    useEffect(() => {
+        reset(property);
+    }, [property, reset]);
 
     const onSubmit = (data: any) => {
         const newData = {

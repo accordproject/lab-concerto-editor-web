@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
@@ -26,10 +26,15 @@ const EnumPage = ({ model, enumDeclaration }: { model: IModel, enumDeclaration: 
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors }
     } = useForm<IEnumDeclaration>({
         resolver: yupResolver(validationSchema)
     });
+
+    useEffect(() => {
+        reset(enumDeclaration);
+    }, [enumDeclaration, reset]);
 
     const onSubmit = (data: any) => {
         const newData = {
@@ -44,7 +49,7 @@ const EnumPage = ({ model, enumDeclaration }: { model: IModel, enumDeclaration: 
             <Paper>
                 <Box px={3} py={2}>
                     <Typography variant="h6">
-                        Edit Concept
+                        Edit Enum
                     </Typography>
                     <Grid container spacing={1}>
                         <Grid item xs={12} sm={12}>
