@@ -17,6 +17,8 @@ import {
 import useStore from '../../store';
 import { IProperty, IConceptDeclaration, IModel } from '../../metamodel/concerto.metamodel';
 
+import { isString, isObjectOrRelationshipProperty, isBooleanProperty, isDoubleProperty } from '../../modelUtil';
+
 const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, concept: IConceptDeclaration, property: IProperty }) => {
 
     const conceptPropertyUpdated = useStore(state => state.conceptPropertyUpdated);
@@ -41,10 +43,21 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
     }, [property, reset]);
 
     const onSubmit = (data: any) => {
+        if (data.defaultValue) {
+            if (isDoubleProperty(property)) {
+                data.defaultValue = parseFloat(data.defaultValue);
+            }
+            else if (isBooleanProperty(property)) {
+                if (data.defaultValue == "true" || data.defaultValue == "false") {
+                    data.defaultValue = (data.defaultValue == "true")
+                }
+            }
+        }
         const newData = {
             ...property,
             ...data
         }
+        console.log(data);
         conceptPropertyUpdated(model.namespace, concept.name, property.name, newData);
     };
 
@@ -71,6 +84,22 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                 {errors.name?.message?.toString()}
                             </Typography>
                         </Grid>
+                        <Typography> {property.$class} </Typography>
+                        {!isObjectOrRelationshipProperty(property) && <Grid item xs={12} sm={12}>
+                            <TextField
+                                required
+                                id="defaultValue"
+                                label="defaultValue"
+                                defaultValue={property.defaultValue}
+                                fullWidth
+                                margin="dense"
+                                {...register('defaultValue')}
+                                error={errors.defaultValue ? true : false}
+                            />
+                            <Typography variant="inherit" color="textSecondary">
+                                {errors.defaultValue?.message?.toString()}
+                            </Typography>
+                        </Grid>}
                         <Grid item xs={12}>
                             <FormControlLabel
                                 control={

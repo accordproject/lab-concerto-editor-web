@@ -75,6 +75,16 @@ export function isString(property: IProperty) {
     !property.isArray
 }
 
+export function isBooleanProperty(property: IProperty) {
+  return getClass(property) === 'concerto.metamodel@1.0.0.BooleanProperty' &&
+    !property.isArray
+}
+
+export function isDoubleProperty(property: IProperty) {
+  return getClass(property) === 'concerto.metamodel@1.0.0.DoubleProperty' &&
+    !property.isArray
+}
+
 export function getModifiers(property: PropertyOrEnum) {
   const optional = (property as IProperty).isOptional ? 'optional' : '';
   const array = (property as IProperty).isArray ? 'array' : '';

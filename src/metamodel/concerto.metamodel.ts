@@ -92,6 +92,7 @@ export interface IProperty extends IConcept {
   isOptional: boolean;
   decorators?: IDecorator[];
   location?: IRange;
+  defaultValue?: any;
 }
 
 export interface IRelationshipProperty extends IProperty {
