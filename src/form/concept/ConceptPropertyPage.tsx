@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
@@ -25,6 +25,9 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
 
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Name is required'),
+        defaultValue: Yup.string(),
+        lowerLimit: Yup.number(),
+        upperLimit: Yup.number(),
         isArray: Yup.bool().oneOf([false, true], 'Array is required')
     });
 
@@ -116,7 +119,6 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                         <Typography> {property.$class} </Typography>
                         <Grid item xs={12} sm={12}>
                             <TextField
-                                required
                                 id="defaultValue"
                                 label="defaultValue"
                                 defaultValue={property.defaultValue}
@@ -132,7 +134,6 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                         </Grid>
                         <Grid item xs={12} sm={12}>
                             <TextField
-                                required
                                 id="lowerLimit"
                                 label="lowerLimit"
                                 defaultValue={property.validator?.lower}
@@ -148,7 +149,6 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                         </Grid>
                         <Grid item xs={12} sm={12}>
                             <TextField
-                                required
                                 id="uppperLimit"
                                 label="uppperLimit"
                                 defaultValue={property.validator?.upper}
