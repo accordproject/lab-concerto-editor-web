@@ -17,7 +17,7 @@ import {
 import useStore from '../../store';
 import { IProperty, IConceptDeclaration, IModel } from '../../metamodel/concerto.metamodel';
 
-import { isString, isObjectOrRelationshipProperty, isBooleanProperty, isDoubleProperty } from '../../modelUtil';
+import { isObjectOrRelationshipProperty, isBooleanProperty, isNumericProperty } from '../../modelUtil';
 
 const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, concept: IConceptDeclaration, property: IProperty }) => {
 
@@ -44,8 +44,8 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
 
     const onSubmit = (data: any) => {
         if (data.defaultValue) {
-            if (isDoubleProperty(property)) {
-                data.defaultValue = parseFloat(data.defaultValue);
+            if (isNumericProperty(property)) {
+                data.defaultValue = data.defaultValue ? Number(data.defaultValue) : null;
             }
             else if (isBooleanProperty(property)) {
                 if (data.defaultValue == "true" || data.defaultValue == "false") {
@@ -53,11 +53,40 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                 }
             }
         }
+        if (data.validator) {
+            if (data.validator.lower === "" && data.validator.upper === "") {
+                data.validator = null;
+            }
+            else if (isNumericProperty(property)){
+                data.validator = {
+                    lower : data.validator.lower ? Number(data.validator.lower) : null,
+                    upper : data.validator.upper ? Number(data.validator.upper) : null,
+                };
+                if (data.validator.lower && data.validator.upper && data.validator.lower > data.validator.upper) {
+                    data.validator = null;
+                }
+            }
+            else {
+                data.validator = null;
+            }
+        }
+
+        if (isNumericProperty(property) && data.validator && data.defaultValue) {
+            if (data.validator.lower && data.defaultValue < data.validator.lower) {
+                data.validator = null;
+                data.defaultValue = null;
+            }
+            else if (data.validator.upper && data.defaultValue > data.validator.upper) {
+                data.validator = null;
+                data.defaultValue = null;
+            }
+        }
+
         const newData = {
             ...property,
             ...data
         }
-        console.log(data);
+        console.log(newData);
         conceptPropertyUpdated(model.namespace, concept.name, property.name, newData);
     };
 
@@ -85,7 +114,7 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                             </Typography>
                         </Grid>
                         <Typography> {property.$class} </Typography>
-                        {!isObjectOrRelationshipProperty(property) && <Grid item xs={12} sm={12}>
+                        <Grid item xs={12} sm={12}>
                             <TextField
                                 required
                                 id="defaultValue"
@@ -93,13 +122,46 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                 defaultValue={property.defaultValue}
                                 fullWidth
                                 margin="dense"
+                                disabled={isObjectOrRelationshipProperty(property)}
                                 {...register('defaultValue')}
                                 error={errors.defaultValue ? true : false}
                             />
                             <Typography variant="inherit" color="textSecondary">
                                 {errors.defaultValue?.message?.toString()}
                             </Typography>
-                        </Grid>}
+                        </Grid>
+                        <Grid item xs={12} sm={12}>
+                            <TextField
+                                required
+                                id="lowerLimit"
+                                label="lowerLimit"
+                                defaultValue={property.validator?.lower}
+                                fullWidth
+                                margin="dense"
+                                disabled={!isNumericProperty(property)}
+                                {...register('validator.lower')}
+                                error={errors.validator?.lower ? true : false}
+                            />
+                            <Typography variant="inherit" color="textSecondary">
+                                {errors.validator?.lower?.message?.toString()}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={12}>
+                            <TextField
+                                required
+                                id="uppperLimit"
+                                label="uppperLimit"
+                                defaultValue={property.validator?.upper}
+                                fullWidth
+                                margin="dense"
+                                disabled={!isNumericProperty(property)}
+                                {...register('validator.upper')}
+                                error={errors.validator?.upper ? true : false}
+                            />
+                            <Typography variant="inherit" color="textSecondary">
+                                {errors.validator?.upper?.message?.toString()}
+                            </Typography>
+                        </Grid>
                         <Grid item xs={12}>
                             <FormControlLabel
                                 control={
