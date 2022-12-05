@@ -318,6 +318,9 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     viewChanged: (view: ViewType) => {
         set(produce((state: EditorState) => {
             state.view = view;
+            state.editorConcept = undefined;
+            state.editorNamespace = undefined;
+            state.editorProperty = undefined;
         }))
     },
     errorChanged: (error: string | undefined) => {

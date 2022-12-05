@@ -1,7 +1,6 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-
 import { useForm, Controller } from 'react-hook-form';
 import {
     Paper,
@@ -15,12 +14,11 @@ import {
 } from '@material-ui/core';
 
 import useStore from '../../store';
-import { IProperty, IConceptDeclaration, IModel } from '../../metamodel/concerto.metamodel';
+import { IConceptDeclaration, IModel, IStringProperty } from '../../metamodel/concerto.metamodel';
 
-const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, concept: IConceptDeclaration, property: IProperty }) => {
+const ConceptStringPropertyPage = ({ model, concept, property }: { model: IModel, concept: IConceptDeclaration, property: IStringProperty }) => {
 
     const conceptPropertyUpdated = useStore(state => state.conceptPropertyUpdated);
-
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Name is required'),
         isArray: Yup.bool().oneOf([false, true], 'Array is required')
@@ -29,22 +27,42 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
     const {
         register,
         reset,
+        setValue,
         control,
         handleSubmit,
         formState: { errors }
-    } = useForm<IProperty>({
-        resolver: yupResolver(validationSchema)
+    } = useForm<IStringProperty>({
+        resolver: yupResolver(validationSchema),
     });
 
+    
     useEffect(() => {
         reset(property);
-    }, [property, reset]);
+
+        if(!!!property.validator){
+            setValue("validator.pattern", "");
+            setValue("validator.flags", "");
+        }
+
+    }, [property, reset, setValue]);
+
 
     const onSubmit = (data: any) => {
         const newData = {
             ...property,
             ...data
         }
+
+        if(!newData.validator?.pattern)
+            delete newData.validator;
+        else{
+            newData.validator = {
+                $class: 'concerto.metamodel@1.0.0.StringRegexValidator',
+                pattern: newData.validator.pattern,
+                flags: newData.validator.flags,
+            }
+        }
+
         conceptPropertyUpdated(model.namespace, concept.name, property.name, newData);
     };
 
@@ -53,7 +71,7 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
             <Paper>
                 <Box px={3} py={2}>
                     <Typography variant="h6">
-                        Edit Property
+                        Edit String Property
                     </Typography>
                     <Grid container spacing={1}>
                         <Grid item xs={12} sm={12}>
@@ -71,13 +89,35 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                 {errors.name?.message?.toString()}
                             </Typography>
                         </Grid>
+
+                        <Grid style={{display:"flex", width:"100%", justifyContent: "space-between"}} item xs={12} sm={12}>
+                            <TextField
+                                id="validators.patterns"
+                                label="Regex Pattern"
+                                variant="filled"
+                                margin="dense"
+                                {...register('validator.pattern')}
+                                error={errors.validator ? true : false}
+                                />
+                            <TextField
+                                id="validator.flags"
+                                label="Regex Flags"
+                                margin="dense"
+                                variant="filled"
+                                {...register('validator.flags')}
+                                error={errors.validator ? true : false}
+                                />
+                            <Typography variant="inherit" color="textSecondary">
+                                {errors.validator?.message?.toString()}
+                            </Typography>
+                        </Grid>
+
                         <Grid item xs={12}>
                             <FormControlLabel
                                 control={
                                     <Controller
                                         name='isOptional'
                                         control={control}
-                                        defaultValue={!!property.isOptional}
                                         render={({ field }) => (
                                             <Checkbox
                                                 {...field}
@@ -106,7 +146,6 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                     <Controller
                                         name='isArray'
                                         control={control}
-                                        defaultValue={!!property.isArray}
                                         render={({ field }) => (
                                             <Checkbox
                                                 {...field}
@@ -145,4 +184,4 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
     );
 };
 
-export default ConceptPropertyPage;
+export default ConceptStringPropertyPage;

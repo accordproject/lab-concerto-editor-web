@@ -1,8 +1,9 @@
-import { IConceptDeclaration, IEnumDeclaration, IEnumProperty, IProperty } from '../metamodel/concerto.metamodel';
-import { isEnum } from '../modelUtil';
+import { IConceptDeclaration, IEnumDeclaration, IEnumProperty, IProperty, IModel, IStringProperty } from '../metamodel/concerto.metamodel';
+import { isEnum, isStringProperty } from '../modelUtil';
 import useStore from '../store';
 import ConceptPage from './concept/ConceptPage';
 import ConceptPropertyPage from './concept/ConceptPropertyPage';
+import ConceptStringPropertyPage from './concept/ConceptStringPropertyPage';
 import EnumPage from './enum/EnumPage';
 import EnumPropertyPage from './enum/EnumPropertyPage';
 import NamespacePage from './namespace/NamespacePage';
@@ -16,8 +17,12 @@ function PropertySheet() {
             return <EnumPropertyPage model={editorNamespace} enumDeclaration={editorConcept as IEnumDeclaration} property={editorProperty as IEnumProperty}/>
         }
         else {
-            if((editorNamespace && editorConcept)) {
-                return <ConceptPropertyPage model={editorNamespace} concept={editorConcept as IConceptDeclaration} property={editorProperty as IProperty}/>
+            if(editorNamespace && editorConcept) {
+                if(isStringProperty(editorProperty as IProperty))
+                    return <ConceptStringPropertyPage model={editorNamespace} concept={editorConcept as IConceptDeclaration} property={editorProperty as IProperty}/>
+                else{
+                    return <ConceptPropertyPage model={editorNamespace as IModel} concept={editorConcept as IConceptDeclaration} property={editorProperty as IStringProperty}/>
+                }
             }
         }
     }

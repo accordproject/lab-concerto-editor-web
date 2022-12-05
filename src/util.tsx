@@ -1,3 +1,6 @@
+import { bool } from "yup";
+import { IProperty } from "./metamodel/concerto.metamodel";
+
 type HttpError = {
   message?: string;
   data?: unknown;

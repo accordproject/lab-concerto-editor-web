@@ -20,7 +20,7 @@ const NamespacePage = ({ model }: { model: IModel }) => {
     const namespaceNameUpdated = useStore(state => state.namespaceNameUpdated);
 
     const validationSchema = Yup.object().shape({
-        name: Yup.string().required('Namespace name is required')
+        namespace: Yup.string().required('Namespace name is required')
     });
 
     const {
@@ -37,7 +37,7 @@ const NamespacePage = ({ model }: { model: IModel }) => {
     }, [model, reset]);
 
     const onSubmit = (data: any) => {
-        namespaceNameUpdated(model, data.name);
+        namespaceNameUpdated(model, data.namespace);
     };
 
     return (
