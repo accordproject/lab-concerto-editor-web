@@ -30,6 +30,10 @@ export function getType(property: PropertyOrEnum) {
   }
 }
 
+export function isStringProperty(property: PropertyOrEnum){
+  return property.$class.endsWith('StringProperty');
+}
+
 export function isObjectOrRelationshipProperty(property: PropertyOrEnum) {
   return (
     getClass(property).endsWith('ObjectProperty') ||

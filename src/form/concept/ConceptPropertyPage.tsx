@@ -34,6 +34,7 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
     const {
         register,
         reset,
+        setValue,
         control,
         handleSubmit,
         formState: { errors }
@@ -43,7 +44,23 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
 
     useEffect(() => {
         reset(property);
-    }, [property, reset]);
+
+        if (!!!property.name) {
+            setValue('name', '');
+        }
+
+        if (!!!property.defaultValue) {
+            setValue('defaultValue', '');
+        }
+
+        if (!!!property.validator?.lower) {
+            setValue('validator.lower', undefined);
+        }
+
+        if (!!!property.validator?.upper) {
+            setValue('validator.upper', undefined);
+        }
+    }, [property, reset, setValue]);
 
     const onSubmit = (data: any) => {
         if (data.defaultValue) {
