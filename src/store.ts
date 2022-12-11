@@ -177,9 +177,27 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             edges: addEdge(connection, get().edges),
         });
     },
-    namespaceNameUpdated: (model, namespace) => {
+    namespaceNameUpdated: (model, newNamespace) => {
         set(produce((state: EditorState) => {
-            state.models[model.namespace].model.namespace = namespace
+            // state.models[model.namespace].model.namespace = namespace
+            const ctoText = state.models[model.namespace].text;
+            delete state.models[model.namespace];
+            // const mm = new ModelManager();
+            const newModel = Parser.parse(ctoText, undefined, { skipLocationNodes: true }) as IModel;
+            // console.log(ctoText);
+            // console.log(newModel);
+            // const newModel = new ModelFile(mm, modelAst);
+            // mm.addModelFile(newModel, undefined, undefined, true);
+            // const ast: IModels = mm.getAst(true);
+            // get().modelsLoaded(ast);
+            newModel.namespace = newNamespace
+            const newCtoText = Printer.toCTO(newModel);
+            state.models[newNamespace] = {
+                text: newCtoText,
+                model: newModel,
+                visible: true
+            }
+            // console.log(newCtoText)
         }))
     },
     namespaceRemoved: (namespace) => {
@@ -256,6 +274,7 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     },
     modelsLoaded: (models: IModels) => {
         get().clearModels();
+        console.log(models.models)
         models.models.forEach(m => {
             set(produce((state: EditorState) => {
                 const ctoText = Printer.toCTO(m);
