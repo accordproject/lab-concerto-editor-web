@@ -92,6 +92,8 @@ export interface IProperty extends IConcept {
   isOptional: boolean;
   decorators?: IDecorator[];
   location?: IRange;
+  defaultValue?: boolean | string | number;
+  validator?: IIntegerDomainValidator | IDoubleDomainValidator | ILongDomainValidator;
 }
 
 export interface IRelationshipProperty extends IProperty {

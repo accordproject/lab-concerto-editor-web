@@ -19,9 +19,9 @@ function PropertySheet() {
         else {
             if(editorNamespace && editorConcept) {
                 if(isStringProperty(editorProperty as IProperty))
-                    return <ConceptStringPropertyPage model={editorNamespace} concept={editorConcept as IConceptDeclaration} property={editorProperty as IProperty}/>
+                    return <ConceptStringPropertyPage model={editorNamespace} concept={editorConcept as IConceptDeclaration} property={editorProperty as IStringProperty}/>
                 else{
-                    return <ConceptPropertyPage model={editorNamespace as IModel} concept={editorConcept as IConceptDeclaration} property={editorProperty as IStringProperty}/>
+                    return <ConceptPropertyPage model={editorNamespace as IModel} concept={editorConcept as IConceptDeclaration} property={editorProperty as IProperty}/>
                 }
             }
         }
