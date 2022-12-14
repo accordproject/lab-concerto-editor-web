@@ -90,6 +90,21 @@ const ConceptStringPropertyPage = ({ model, concept, property }: { model: IModel
                             </Typography>
                         </Grid>
 
+                        <Grid item xs={12} sm={12}>
+                            <TextField
+                                id="defaultValue"
+                                label="defaultValue"
+                                defaultValue={property.defaultValue}
+                                fullWidth
+                                margin="dense"
+                                {...register('defaultValue')}
+                                error={errors.defaultValue ? true : false}
+                            />
+                            <Typography variant="inherit" color="textSecondary">
+                                {errors.defaultValue?.message?.toString()}
+                            </Typography>
+                        </Grid>
+
                         <Grid style={{display:"flex", width:"100%", justifyContent: "space-between"}} item xs={12} sm={12}>
                             <TextField
                                 id="validators.patterns"
