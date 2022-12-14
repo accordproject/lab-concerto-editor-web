@@ -3,7 +3,7 @@ import produce from 'immer';
 import { saveAs } from 'file-saver';
 import { ClassDeclaration, ModelFile, ModelManager, ModelUtil, Property } from '@accordproject/concerto-core';
 import { Printer, Parser } from '@accordproject/concerto-cto';
-import { IDeclaration, IModels } from './metamodel/concerto.metamodel';
+import { IDeclaration, IImport, IModels } from './metamodel/concerto.metamodel';
 import assert from 'assert';
 
 import {
@@ -32,6 +32,7 @@ import { getLayoutedElements, metamodelToReactFlow } from './diagramUtil';
 import { getErrorMessage } from './util';
 import JSZip from 'jszip';
 import { isEnum } from './modelUtil';
+import { stat } from 'fs';
 
 const SAMPLE_MODEL_1 = `namespace org.acme@1.0.0
 
@@ -177,10 +178,39 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             edges: addEdge(connection, get().edges),
         });
     },
-    namespaceNameUpdated: (model, namespace) => {
+    namespaceNameUpdated: (oldModel, newNamespace) => {
         set(produce((state: EditorState) => {
-            state.models[model.namespace].model.namespace = namespace
+            if( newNamespace in state.models && oldModel.namespace!==newNamespace ){
+                throw new Error(`Namespace with name ${newNamespace} already exists`);
+            }
+
+            state.models[newNamespace] = {
+                ...state.models[oldModel.namespace]
+            } as ModelEntry;
+
+            state.models[newNamespace].model.namespace = newNamespace
+            state.models[newNamespace].text = Printer.toCTO(state.models[newNamespace].model);
+
+            delete state.models[oldModel.namespace]
+            
+            Object.keys(state.models).filter((key) => key!==newNamespace).forEach((key) => {
+                console.log(key);
+                let dirty = false
+                state.models[key].model?.imports?.forEach((imp : IImport)=>{
+                    if(imp.namespace===oldModel.namespace){
+                        imp.namespace=newNamespace
+                        dirty = true
+                    }
+                })
+                if(dirty)
+                    state.models[key].text = Printer.toCTO(state.models[key].model);
+                dirty = false;
+            })
+
         }))
+        
+        get().modelsModified();
+
     },
     namespaceRemoved: (namespace) => {
         set(produce((state: EditorState) => {
