@@ -1,5 +1,11 @@
 import { bool } from "yup";
+import { IConcept } from "./metamodel/concerto";
 import { IProperty } from "./metamodel/concerto.metamodel";
+
+const typeToClass = {
+  "Enum" : "concerto.metamodel@1.0.0.EnumDeclaration",
+  "Concept" : "concerto.metamodel@1.0.0.ConceptDeclaration",
+} as Record<string, string>
 
 type HttpError = {
   message?: string;
@@ -60,4 +66,8 @@ export function clamp(val: number, min: number, max: number) {
 export function copyObject<T>(obj: T) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   return JSON.parse(JSON.stringify(obj)) as T;
+}
+
+export function getClassFromType(type: string) : string {
+  return typeToClass[type];
 }

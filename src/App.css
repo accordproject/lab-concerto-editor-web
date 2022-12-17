@@ -3,6 +3,10 @@
   height: 100vh;
 }
 
+.MenuItem {
+  display: block;
+}
+
 .Header {
   display: flex;
   flex-direction: column;

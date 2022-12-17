@@ -103,13 +103,12 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
             ...property,
             ...data
         }
-        console.log(newData);
         conceptPropertyUpdated(model.namespace, concept.name, property.name, newData);
     };
 
     return (
         <Fragment>
-            <Paper>
+            <Paper style={{"padding":"3%"}}>
                 <Box px={3} py={2}>
                     <Typography variant="h6">
                         Edit Property
@@ -130,7 +129,6 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                 {errors.name?.message?.toString()}
                             </Typography>
                         </Grid>
-                        <Typography> {property.$class} </Typography>
                         <Grid item xs={12} sm={12}>
                             <TextField
                                 id="defaultValue"

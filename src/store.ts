@@ -5,6 +5,7 @@ import { ClassDeclaration, ModelFile, ModelManager, ModelUtil, Property } from '
 import { Printer, Parser } from '@accordproject/concerto-cto';
 import { IDeclaration, IImport, IModels } from './metamodel/concerto.metamodel';
 import assert from 'assert';
+import { getClass } from './modelUtil';
 
 import {
     Node,
@@ -29,10 +30,11 @@ import {
     IProperty,
 } from './metamodel/concerto.metamodel';
 import { getLayoutedElements, metamodelToReactFlow } from './diagramUtil';
-import { getErrorMessage } from './util';
+import { getClassFromType, getErrorMessage } from './util';
 import JSZip from 'jszip';
 import { isEnum } from './modelUtil';
 import { stat } from 'fs';
+import { IConcept } from './metamodel/concerto';
 
 const SAMPLE_MODEL_1 = `namespace org.acme@1.0.0
 
@@ -131,6 +133,7 @@ interface EditorState {
 
     // generic concept / enum actions
     declarationUpdated: (namespace: string, id: string, decl: IConceptDeclaration | IEnumDeclaration) => void
+    addDeclarationFromData: (data: any) => void
 
     // concept actions
     conceptPropertyAdded: (namespace: string, conceptName: string) => void
@@ -180,6 +183,10 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     },
     namespaceNameUpdated: (oldModel, newNamespace) => {
         set(produce((state: EditorState) => {
+            if(oldModel.namespace===newNamespace){
+                return;
+            }
+            
             if( newNamespace in state.models && oldModel.namespace!==newNamespace ){
                 throw new Error(`Namespace with name ${newNamespace} already exists`);
             }
@@ -194,7 +201,6 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             delete state.models[oldModel.namespace]
             
             Object.keys(state.models).filter((key) => key!==newNamespace).forEach((key) => {
-                console.log(key);
                 let dirty = false
                 state.models[key].model?.imports?.forEach((imp : IImport)=>{
                     if(imp.namespace===oldModel.namespace){
@@ -519,6 +525,40 @@ const useEditorStore = create<EditorState>()((set, get) => ({
         const mm = new ModelManager();
         mm.fromAst(unresolvedAst);
         return mm;
+    },
+    addDeclarationFromData(data: any){
+        set(produce((state: EditorState) => {
+            if(data.type==='Enum'){
+                const newDeclaration = {
+                    $class: getClassFromType(data.type),
+                    name: data.name,
+                    properties: [] as IEnumProperty[]
+                } as IEnumDeclaration;
+                state.editorNamespace?.declarations?.push(newDeclaration);
+                state.editorConcept = newDeclaration;
+                console.log(getClass(state.editorConcept));
+            }
+            else{
+                const newDeclaration = {
+                    $class: getClassFromType(data.type),
+                    name: data.name,
+                    properties: [] as IProperty[],
+                    isAbstract: false
+                } as IConceptDeclaration;
+                state.editorNamespace?.declarations?.push(newDeclaration);
+                state.editorConcept = newDeclaration;
+                console.log(getClass(state.editorConcept));
+                console.log(newDeclaration)
+            }
+            if(state.editorNamespace?.namespace)
+                state.models[state.editorNamespace?.namespace] = {
+                    model: state.editorNamespace,
+                    text: Printer.toCTO(state.editorNamespace),
+                    visible: true
+                }
+        }))
+        
+        get().modelsModified();
     }
 }))
 
