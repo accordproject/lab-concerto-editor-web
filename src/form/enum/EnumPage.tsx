@@ -46,7 +46,7 @@ const EnumPage = ({ model, enumDeclaration }: { model: IModel, enumDeclaration: 
 
     return (
         <Fragment>
-            <Paper>
+            <Paper style={{"padding":"3%"}}>
                 <Box px={3} py={2}>
                     <Typography variant="h6">
                         Edit Enum

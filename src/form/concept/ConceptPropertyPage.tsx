@@ -74,7 +74,7 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
             }
         }
         if (data.validator) {
-            if (data.validator.lower === "" && data.validator.upper === "") {
+            if (!data.validator.lower && !data.validator.upper) {
                 data.validator = null;
             }
             else if (isNumericProperty(property)){
@@ -112,7 +112,7 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
 
     return (
         <Fragment>
-            <Paper>
+            <Paper style={{"padding":"3%"}}>
                 <Box px={3} py={2}>
                     <Typography variant="h6">
                         Edit Property
@@ -133,7 +133,6 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                 {errors.name?.message?.toString()}
                             </Typography>
                         </Grid>
-                        <Typography> {property.$class} </Typography>
                         <Grid item xs={12} sm={12}>
                             <TextField
                                 id="defaultValue"

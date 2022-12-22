@@ -37,12 +37,13 @@ const ConceptStringPropertyPage = ({ model, concept, property }: { model: IModel
 
     
     useEffect(() => {
-        reset(property);
 
         if(!!!property.validator){
             setValue("validator.pattern", "");
             setValue("validator.flags", "");
         }
+        reset(property);
+
 
     }, [property, reset, setValue]);
 
@@ -68,7 +69,7 @@ const ConceptStringPropertyPage = ({ model, concept, property }: { model: IModel
 
     return (
         <Fragment>
-            <Paper>
+            <Paper style={{"padding":"3%"}}>
                 <Box px={3} py={2}>
                     <Typography variant="h6">
                         Edit String Property
@@ -90,11 +91,26 @@ const ConceptStringPropertyPage = ({ model, concept, property }: { model: IModel
                             </Typography>
                         </Grid>
 
+                        <Grid item xs={12} sm={12}>
+                            <TextField
+                                id="defaultValue"
+                                label="defaultValue"
+                                defaultValue={property.defaultValue}
+                                fullWidth
+                                margin="dense"
+                                {...register('defaultValue')}
+                                error={errors.defaultValue ? true : false}
+                            />
+                            <Typography variant="inherit" color="textSecondary">
+                                {errors.defaultValue?.message?.toString()}
+                            </Typography>
+                        </Grid>
+
                         <Grid style={{display:"flex", width:"100%", justifyContent: "space-between"}} item xs={12} sm={12}>
                             <TextField
-                                id="validators.patterns"
+                                id="validators.pattern"
                                 label="Regex Pattern"
-                                variant="filled"
+                                defaultValue={property.validator?.pattern}
                                 margin="dense"
                                 {...register('validator.pattern')}
                                 error={errors.validator ? true : false}
@@ -103,7 +119,7 @@ const ConceptStringPropertyPage = ({ model, concept, property }: { model: IModel
                                 id="validator.flags"
                                 label="Regex Flags"
                                 margin="dense"
-                                variant="filled"
+                                defaultValue={property.validator?.flags}
                                 {...register('validator.flags')}
                                 error={errors.validator ? true : false}
                                 />

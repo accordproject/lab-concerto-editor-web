@@ -27,6 +27,7 @@ const NamespacePage = ({ model }: { model: IModel }) => {
         register,
         handleSubmit,
         reset,
+        setError,
         formState: { errors }
     } = useForm<IModel>({
         resolver: yupResolver(validationSchema)
@@ -37,12 +38,16 @@ const NamespacePage = ({ model }: { model: IModel }) => {
     }, [model, reset]);
 
     const onSubmit = (data: any) => {
-        namespaceNameUpdated(model, data.namespace);
+        try{
+            namespaceNameUpdated(model, data.namespace);
+        } catch(e) {
+            setError('namespace', { type: 'custom', message: e as string});
+        }
     };
 
     return (
         <Fragment>
-            <Paper>
+            <Paper style={{"padding":"3%"}}>
                 <Box px={3} py={2}>
                     <Typography variant="h6">
                         Edit Namespace
