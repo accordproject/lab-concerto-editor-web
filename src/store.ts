@@ -138,6 +138,7 @@ interface EditorState {
     // concept actions
     conceptPropertyAdded: (namespace: string, conceptName: string) => void
     conceptPropertyUpdated: (namespace: string, conceptName: string, propertyName: string, property: IProperty) => void
+    addConceptProperty: (newConceptProperty: IProperty) => void
 
     // enum actions
     enumPropertyUpdated: (namespace: string, enumName: string, propertyName: string, property: IEnumProperty) => void
@@ -563,9 +564,11 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     },
     addEnumProperty(newEnum: IEnumProperty){
         set(produce((state: EditorState) => {
-            (state.models[state.editorNamespace?.namespace as string].model.declarations)?.forEach( (decl) => {
+            (state.models[state.editorNamespace?.namespace as string].model.declarations as IEnumDeclaration[])?.forEach( (decl) => {
                 if(decl.name === state.editorConcept?.name && isEnum(decl as IEnumDeclaration)) {
                     (decl as IEnumDeclaration)?.properties.push(newEnum);
+                    state.editorConcept = decl;
+                    state.editorProperty = newEnum;
                 }
             })
 
@@ -576,7 +579,28 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                     visible: state.models[state.editorNamespace.namespace].visible
                 }
         }))
+    },
+    addConceptProperty(newConceptProperty: IProperty){
+        set(produce((state: EditorState) => {
+            (state.models[state.editorNamespace?.namespace as string].model.declarations as IConceptDeclaration[])?.forEach( (decl) => {
+                if(decl.name === state.editorConcept?.name && !isEnum(decl as IConceptDeclaration)) {
+                    (decl as IConceptDeclaration)?.properties.push(newConceptProperty);
+                    state.editorConcept = decl;
+                    state.editorProperty = newConceptProperty;
+                }
+            })
+
+            if(state.editorNamespace?.namespace)
+                state.models[state.editorNamespace?.namespace] = {
+                    model: state.models[state.editorNamespace.namespace].model,
+                    text: Printer.toCTO(state.models[state.editorNamespace.namespace].model),
+                    visible: state.models[state.editorNamespace.namespace].visible
+                }
+            state.editorNamespace = state.models[state.editorNamespace?.namespace as string].model;
+            
+        }))
     }
+
 }))
 
 export default useEditorStore;

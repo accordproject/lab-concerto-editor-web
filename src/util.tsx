@@ -6,7 +6,15 @@ const typeToClass = {
   "Enum" : "concerto.metamodel@1.0.0.EnumDeclaration",
   "Concept" : "concerto.metamodel@1.0.0.ConceptDeclaration",
   "EnumProperty" : "concerto.metamodel@1.0.0.EnumProperty",
+  "Long": "concerto.metamodel@1.0.0.LongProperty",
+  "Integer": "concerto.metamodel@1.0.0.IntegerProperty",
+  "String": "concerto.metamodel@1.0.0.StringProperty",
+  "Double": "concerto.metamodel@1.0.0.DoubleProperty",
+  "Boolean": "concerto.metamodel@1.0.0.BooleanProperty",
+  "DateTime": "concerto.metamodel@1.0.0.DateTimeProperty"
 } as Record<string, string>
+
+export const PrimaryPropertyTypes = [ "Long", "String", "Integer", "Double", "DateTime", "Boolean" ]
 
 type HttpError = {
   message?: string;

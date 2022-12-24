@@ -12,6 +12,7 @@ import { isEnum } from '../modelUtil';
 import { getClassFromType } from '../util';
 import { editor } from 'monaco-editor';
 import { IConcept } from '../metamodel/concerto';
+import AddConceptPropertyForm from './concept/AddConceptPropertyForm';
 
 function PropertyTree() {
   const models = useStore(state => state.models);
@@ -21,6 +22,7 @@ function PropertyTree() {
   const addEnumProperty = useStore(state => state.addEnumProperty);
 
   const [displayAddDeclModal, setDisplayAddDecModal] = useState(false);
+  const [displayConceptPropertyModel, setDisplayConceptPropertyModel] = useState(false);
 
   const addNewButton = (buttonLabel: string, nodeId: string) => {
     return (
@@ -70,6 +72,7 @@ function PropertyTree() {
                   </>
                   }>
                 {addNewButton("Property", `${modelEntry.model.namespace}#${decl.name}`)}
+                <AddConceptPropertyForm active={displayConceptPropertyModel} onClose={setDisplayConceptPropertyModel}></AddConceptPropertyForm>
                 {(decl as IEnumDeclaration | IConceptDeclaration).properties.map(prop => {
                   return <TreeItem 
                     nodeId={`${modelEntry.model.namespace}#${decl.name}.${prop.name}`} 
@@ -109,6 +112,9 @@ function PropertyTree() {
         name: `MODEL${editorConcept?.properties?editorConcept.properties.length:0}`
       }
       addEnumProperty(newEnum);
+    }
+    else {
+      setDisplayConceptPropertyModel(true);
     }
   };
 
