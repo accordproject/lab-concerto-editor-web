@@ -141,6 +141,7 @@ interface EditorState {
 
     // enum actions
     enumPropertyUpdated: (namespace: string, enumName: string, propertyName: string, property: IEnumProperty) => void
+    addEnumProperty: (newEnum: IEnumProperty) => void
 
     // selectors
     selectClassDeclaration: (conceptFqn: string) => ClassDeclaration
@@ -559,6 +560,22 @@ const useEditorStore = create<EditorState>()((set, get) => ({
         }))
         
         get().modelsModified();
+    },
+    addEnumProperty(newEnum: IEnumProperty){
+        set(produce((state: EditorState) => {
+            (state.models[state.editorNamespace?.namespace as string].model.declarations)?.forEach( (decl) => {
+                if(decl.name === state.editorConcept?.name && isEnum(decl as IEnumDeclaration)) {
+                    (decl as IEnumDeclaration)?.properties.push(newEnum);
+                }
+            })
+
+            if(state.editorNamespace?.namespace)
+                state.models[state.editorNamespace?.namespace] = {
+                    model: state.models[state.editorNamespace.namespace].model,
+                    text: Printer.toCTO(state.models[state.editorNamespace.namespace].model),
+                    visible: state.models[state.editorNamespace.namespace].visible
+                }
+        }))
     }
 }))
 

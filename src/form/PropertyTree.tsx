@@ -8,11 +8,17 @@ import useStore from '../store';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { Button } from '@mui/material';
 import AddDeclarationForm from './concept/addConceptForm';
+import { isEnum } from '../modelUtil';
+import { getClassFromType } from '../util';
+import { editor } from 'monaco-editor';
+import { IConcept } from '../metamodel/concerto';
 
 function PropertyTree() {
   const models = useStore(state => state.models);
   const editorItemSelected = useStore(state => state.editorItemSelected);
   const ctoModified = useStore(state => state.ctoModified);
+  const editorConcept = useStore(state => state.editorConcept);
+  const addEnumProperty = useStore(state => state.addEnumProperty);
 
   const [displayAddDeclModal, setDisplayAddDecModal] = useState(false);
 
@@ -95,7 +101,16 @@ function PropertyTree() {
     setDisplayAddDecModal(true);
   };
 
-  const addProperty = () => {};
+  const addProperty = () => {
+    if(isEnum(editorConcept as IConcept)){
+      console.log(editorConcept?.properties.length);
+      const newEnum = {
+        $class: getClassFromType("EnumProperty"),
+        name: `MODEL${editorConcept?.properties?editorConcept.properties.length:0}`
+      }
+      addEnumProperty(newEnum);
+    }
+  };
 
   const handleTreeItemSelected = (e: SyntheticEvent, nodeId: string) => {
     if(nodeId.split(" ").length===2)

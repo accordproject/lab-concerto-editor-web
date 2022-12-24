@@ -5,6 +5,7 @@ import { IProperty } from "./metamodel/concerto.metamodel";
 const typeToClass = {
   "Enum" : "concerto.metamodel@1.0.0.EnumDeclaration",
   "Concept" : "concerto.metamodel@1.0.0.ConceptDeclaration",
+  "EnumProperty" : "concerto.metamodel@1.0.0.EnumProperty",
 } as Record<string, string>
 
 type HttpError = {
