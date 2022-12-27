@@ -8,13 +8,21 @@ import useStore from '../store';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { Button } from '@mui/material';
 import AddDeclarationForm from './concept/addConceptForm';
+import { isEnum } from '../modelUtil';
+import { getClassFromType } from '../util';
+import { editor } from 'monaco-editor';
+import { IConcept } from '../metamodel/concerto';
+import AddConceptPropertyForm from './concept/AddConceptPropertyForm';
 
 function PropertyTree() {
   const models = useStore(state => state.models);
   const editorItemSelected = useStore(state => state.editorItemSelected);
   const ctoModified = useStore(state => state.ctoModified);
+  const editorConcept = useStore(state => state.editorConcept);
+  const addEnumProperty = useStore(state => state.addEnumProperty);
 
   const [displayAddDeclModal, setDisplayAddDecModal] = useState(false);
+  const [displayConceptPropertyModel, setDisplayConceptPropertyModel] = useState(false);
 
   const addNewButton = (buttonLabel: string, nodeId: string) => {
     return (
@@ -64,6 +72,7 @@ function PropertyTree() {
                   </>
                   }>
                 {addNewButton("Property", `${modelEntry.model.namespace}#${decl.name}`)}
+                <AddConceptPropertyForm active={displayConceptPropertyModel} onClose={setDisplayConceptPropertyModel}></AddConceptPropertyForm>
                 {(decl as IEnumDeclaration | IConceptDeclaration).properties.map(prop => {
                   return <TreeItem 
                     nodeId={`${modelEntry.model.namespace}#${decl.name}.${prop.name}`} 
@@ -95,7 +104,19 @@ function PropertyTree() {
     setDisplayAddDecModal(true);
   };
 
-  const addProperty = () => {};
+  const addProperty = () => {
+    if(isEnum(editorConcept as IConcept)){
+      console.log(editorConcept?.properties.length);
+      const newEnum = {
+        $class: getClassFromType("EnumProperty"),
+        name: `MODEL${editorConcept?.properties?editorConcept.properties.length:0}`
+      }
+      addEnumProperty(newEnum);
+    }
+    else {
+      setDisplayConceptPropertyModel(true);
+    }
+  };
 
   const handleTreeItemSelected = (e: SyntheticEvent, nodeId: string) => {
     if(nodeId.split(" ").length===2)
