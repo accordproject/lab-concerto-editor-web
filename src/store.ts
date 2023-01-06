@@ -3,8 +3,9 @@ import produce from 'immer';
 import { saveAs } from 'file-saver';
 import { ClassDeclaration, ModelFile, ModelManager, ModelUtil, Property } from '@accordproject/concerto-core';
 import { Printer, Parser } from '@accordproject/concerto-cto';
-import { IDeclaration, IModels } from './metamodel/concerto.metamodel';
+import { IDeclaration, IImport, IModels } from './metamodel/concerto.metamodel';
 import assert from 'assert';
+import { getClass } from './modelUtil';
 
 import {
     Node,
@@ -29,9 +30,11 @@ import {
     IProperty,
 } from './metamodel/concerto.metamodel';
 import { getLayoutedElements, metamodelToReactFlow } from './diagramUtil';
-import { getErrorMessage } from './util';
+import { getClassFromType, getErrorMessage } from './util';
 import JSZip from 'jszip';
 import { isEnum } from './modelUtil';
+import { stat } from 'fs';
+import { IConcept } from './metamodel/concerto';
 
 const SAMPLE_MODEL_1 = `namespace org.acme@1.0.0
 
@@ -130,13 +133,17 @@ interface EditorState {
 
     // generic concept / enum actions
     declarationUpdated: (namespace: string, id: string, decl: IConceptDeclaration | IEnumDeclaration) => void
+    addDeclarationFromData: (data: any) => void
+    deleteEditorConcept: () => void
 
     // concept actions
     conceptPropertyAdded: (namespace: string, conceptName: string) => void
     conceptPropertyUpdated: (namespace: string, conceptName: string, propertyName: string, property: IProperty) => void
+    addConceptProperty: (newConceptProperty: IProperty) => void
 
     // enum actions
     enumPropertyUpdated: (namespace: string, enumName: string, propertyName: string, property: IEnumProperty) => void
+    addEnumProperty: (newEnum: IEnumProperty) => void
 
     // selectors
     selectClassDeclaration: (conceptFqn: string) => ClassDeclaration
@@ -177,10 +184,42 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             edges: addEdge(connection, get().edges),
         });
     },
-    namespaceNameUpdated: (model, namespace) => {
+    namespaceNameUpdated: (oldModel, newNamespace) => {
         set(produce((state: EditorState) => {
-            state.models[model.namespace].model.namespace = namespace
+            if(oldModel.namespace===newNamespace){
+                return;
+            }
+            
+            if( newNamespace in state.models && oldModel.namespace!==newNamespace ){
+                throw new Error(`Namespace with name ${newNamespace} already exists`);
+            }
+
+            state.models[newNamespace] = {
+                ...state.models[oldModel.namespace]
+            } as ModelEntry;
+
+            state.models[newNamespace].model.namespace = newNamespace
+            state.models[newNamespace].text = Printer.toCTO(state.models[newNamespace].model);
+
+            delete state.models[oldModel.namespace]
+            
+            Object.keys(state.models).filter((key) => key!==newNamespace).forEach((key) => {
+                let dirty = false
+                state.models[key].model?.imports?.forEach((imp : IImport)=>{
+                    if(imp.namespace===oldModel.namespace){
+                        imp.namespace=newNamespace
+                        dirty = true
+                    }
+                })
+                if(dirty)
+                    state.models[key].text = Printer.toCTO(state.models[key].model);
+                dirty = false;
+            })
+
         }))
+        
+        get().modelsModified();
+
     },
     namespaceRemoved: (namespace) => {
         set(produce((state: EditorState) => {
@@ -191,6 +230,9 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                 }
             })
             state.models = newModels;
+            state.editorNamespace = undefined;
+            state.editorConcept = undefined;
+            state.editorProperty = undefined;
         }))
         get().modelsModified();
     },
@@ -256,6 +298,7 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     },
     modelsLoaded: (models: IModels) => {
         get().clearModels();
+        console.log(models.models)
         models.models.forEach(m => {
             set(produce((state: EditorState) => {
                 const ctoText = Printer.toCTO(m);
@@ -318,6 +361,9 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     viewChanged: (view: ViewType) => {
         set(produce((state: EditorState) => {
             state.view = view;
+            state.editorConcept = undefined;
+            state.editorNamespace = undefined;
+            state.editorProperty = undefined;
         }))
     },
     errorChanged: (error: string | undefined) => {
@@ -486,7 +532,104 @@ const useEditorStore = create<EditorState>()((set, get) => ({
         const mm = new ModelManager();
         mm.fromAst(unresolvedAst);
         return mm;
+    },
+    addDeclarationFromData(data: any){
+        set(produce((state: EditorState) => {
+            if(data.type==='Enum'){
+                const newDeclaration = {
+                    $class: getClassFromType(data.type),
+                    name: data.name,
+                    properties: [] as IEnumProperty[]
+                } as IEnumDeclaration;
+                state.editorNamespace?.declarations?.push(newDeclaration);
+                state.editorConcept = newDeclaration;
+                console.log(getClass(state.editorConcept));
+            }
+            else{
+                const newDeclaration = {
+                    $class: getClassFromType(data.type),
+                    name: data.name,
+                    properties: [] as IProperty[],
+                    isAbstract: false
+                } as IConceptDeclaration;
+                state.editorNamespace?.declarations?.push(newDeclaration);
+                state.editorConcept = newDeclaration;
+                console.log(getClass(state.editorConcept));
+                console.log(newDeclaration)
+            }
+            if(state.editorNamespace?.namespace)
+                state.models[state.editorNamespace?.namespace] = {
+                    model: state.editorNamespace,
+                    text: Printer.toCTO(state.editorNamespace),
+                    visible: true
+                }
+        }))
+        
+        get().modelsModified();
+    },
+    addEnumProperty(newEnum: IEnumProperty){
+        set(produce((state: EditorState) => {
+            (state.models[state.editorNamespace?.namespace as string].model.declarations as IEnumDeclaration[])?.forEach( (decl) => {
+                if(decl.name === state.editorConcept?.name && isEnum(decl as IEnumDeclaration)) {
+                    (decl as IEnumDeclaration)?.properties.push(newEnum);
+                    state.editorConcept = decl;
+                    state.editorProperty = newEnum;
+                }
+            })
+
+            if(state.editorNamespace?.namespace)
+                state.models[state.editorNamespace?.namespace] = {
+                    model: state.models[state.editorNamespace.namespace].model,
+                    text: Printer.toCTO(state.models[state.editorNamespace.namespace].model),
+                    visible: state.models[state.editorNamespace.namespace].visible
+                }
+        }))
+        get().modelsModified();
+
+    },
+    addConceptProperty(newConceptProperty: IProperty){
+        set(produce((state: EditorState) => {
+            (state.models[state.editorNamespace?.namespace as string].model.declarations as IConceptDeclaration[])?.forEach( (decl) => {
+                if(decl.name === state.editorConcept?.name && !isEnum(decl as IConceptDeclaration)) {
+                    (decl as IConceptDeclaration)?.properties.push(newConceptProperty);
+                    state.editorConcept = decl;
+                    state.editorProperty = newConceptProperty;
+                }
+            })
+
+            if(state.editorNamespace?.namespace)
+                state.models[state.editorNamespace?.namespace] = {
+                    model: state.models[state.editorNamespace.namespace].model,
+                    text: Printer.toCTO(state.models[state.editorNamespace.namespace].model),
+                    visible: state.models[state.editorNamespace.namespace].visible
+                }
+            state.editorNamespace = state.models[state.editorNamespace?.namespace as string].model;
+            
+        }))
+        get().modelsModified();
+    },
+    deleteEditorConcept(){
+        set(produce((state: EditorState)=>{
+        
+            try{
+            state.models[state.editorNamespace?.namespace as string].model.declarations = state.editorNamespace?.declarations?.filter((decl) => decl.name!=state.editorConcept?.name)
+
+            state.editorNamespace = state.models[state.editorNamespace?.namespace as string].model
+            state.editorConcept = undefined
+            if(state.editorNamespace?.namespace)
+                state.models[state.editorNamespace?.namespace] = {
+                    model: state.models[state.editorNamespace?.namespace as string].model,
+                    text: Printer.toCTO(state.editorNamespace),
+                    visible: true
+                }
+            } catch(e) {
+                
+            }
+        }))
+
+        get().modelsModified();
     }
+
 }))
 
 export default useEditorStore;

@@ -1,3 +1,21 @@
+import { bool } from "yup";
+import { IConcept } from "./metamodel/concerto";
+import { IProperty } from "./metamodel/concerto.metamodel";
+
+const typeToClass = {
+  "Enum" : "concerto.metamodel@1.0.0.EnumDeclaration",
+  "Concept" : "concerto.metamodel@1.0.0.ConceptDeclaration",
+  "EnumProperty" : "concerto.metamodel@1.0.0.EnumProperty",
+  "Long": "concerto.metamodel@1.0.0.LongProperty",
+  "Integer": "concerto.metamodel@1.0.0.IntegerProperty",
+  "String": "concerto.metamodel@1.0.0.StringProperty",
+  "Double": "concerto.metamodel@1.0.0.DoubleProperty",
+  "Boolean": "concerto.metamodel@1.0.0.BooleanProperty",
+  "DateTime": "concerto.metamodel@1.0.0.DateTimeProperty"
+} as Record<string, string>
+
+export const PrimaryPropertyTypes = [ "Long", "String", "Integer", "Double", "DateTime", "Boolean" ]
+
 type HttpError = {
   message?: string;
   data?: unknown;
@@ -21,7 +39,7 @@ function isString(value: unknown) {
 
 export function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message
-  return String(error)
+  return String(error+"jhvcvxbc")
 }
 
 export function errorToMessage(error: unknown): string {
@@ -57,4 +75,8 @@ export function clamp(val: number, min: number, max: number) {
 export function copyObject<T>(obj: T) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   return JSON.parse(JSON.stringify(obj)) as T;
+}
+
+export function getClassFromType(type: string) : string {
+  return typeToClass[type];
 }

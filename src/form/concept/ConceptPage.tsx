@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -12,7 +13,8 @@ import {
     FormControlLabel,
     Checkbox,
     Button,
-    MenuItem
+    MenuItem,
+    MenuProps
 } from '@material-ui/core';
 
 import useStore from '../../store';
@@ -30,6 +32,11 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
 
     const classDeclaration = selectClassDeclaration(`${model.namespace}.${concept.name}`);
     const allowEditIdentifier = classDeclaration.idField !== undefined;
+    const deleteEditorConcept = useStore(state => state.deleteEditorConcept);
+
+    const onConceptDelete = () => {
+        deleteEditorConcept();
+    }
 
     const shape: ObjectShape = {
         name: Yup.string().required('Name is required'),
@@ -57,7 +64,12 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
         reset(concept);
     }, [concept, reset]);
 
+    if(concept.superType){
+        console.log(getFullyQualified(concept.superType))
+    }
+
     const onSubmit = (data: any) => {
+      try{
         const newData = {
             ...concept,
             ...data
@@ -69,9 +81,10 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
                 const namespace = ModelUtil.getNamespace(newData.superType);
                 newData.superType = {
                     $class: 'concerto.metamodel@1.0.0.TypeIdentifier',
-                    name,
+                    name: name,
                     namespace
                 }
+                console.log(newData.superType)
             }
             else {
                 newData.superType = null;
@@ -96,15 +109,15 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
                 newData.identified = null;
             }
         }
-
-        console.log(`Updating: ${model.namespace}.${concept.name}`);
-        console.log(newData);
         declarationUpdated(model.namespace, concept.name, newData);
+      } catch(e) {
+        alert(e);
+      }
     };
 
     return (
         <Fragment>
-            <Paper>
+            <Paper style={{"padding":"3%"}}>
                 <Box px={3} py={2}>
                     <Typography variant="h6">
                         Edit Concept
@@ -136,12 +149,12 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
                                 {...register('superType')}
                                 error={errors.superType ? true : false}
                             >
-                                <MenuItem key='$NONE' value='$NONE'>
+                                <MenuItem style={{"display":"block"}} key='$NONE' value='$NONE'>
                                     NONE
                                 </MenuItem>
                                 {selectDeclarationFullyQualfiedNames(decl => !isEnum(decl) && decl.name !== concept.name).map(conceptFqn =>
-                                    <MenuItem key={conceptFqn} value={conceptFqn}>
-                                        {conceptFqn}
+                                    <MenuItem style={{"display":"block"}} key={conceptFqn} value={conceptFqn}>
+                                        { conceptFqn}
                                     </MenuItem>
                                 )}
                             </TextField>
@@ -160,14 +173,14 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
                                 {...register('identified')}
                                 error={errors.identified ? true : false}
                             >
-                                <MenuItem key='$NONE' value='$NONE'>
+                                <MenuItem style={{"display":"block"}}  key='$NONE' value='$NONE'>
                                     NONE
                                 </MenuItem>
-                                <MenuItem key='$SYSTEM' value='$SYSTEM'>
+                                <MenuItem style={{"display":"block"}} key='$SYSTEM' value='$SYSTEM'>
                                     SYSTEM
                                 </MenuItem>
                                 {selectPropertyNames(`${model.namespace}.${concept.name}`, (prop) => prop.getType() === 'String' && prop.isArray() === false).map(propertyName =>
-                                    <MenuItem key={propertyName} value={propertyName}>
+                                    <MenuItem style={{"display":"block"}} key={propertyName} value={propertyName}>
                                         {propertyName}
                                     </MenuItem>
                                 )}
@@ -210,6 +223,9 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
                             onClick={handleSubmit(onSubmit)}
                         >
                             Save
+                        </Button>
+                        <Button variant="outlined" style={{"marginLeft":"10px"}} color="secondary" startIcon={<DeleteIcon />} onClick={onConceptDelete}>
+                            Delete
                         </Button>
                     </Box>
                 </Box>
