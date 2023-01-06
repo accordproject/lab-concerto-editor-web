@@ -294,6 +294,7 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     },
     modelsLoaded: (models: IModels) => {
         get().clearModels();
+        console.log(models.models)
         models.models.forEach(m => {
             set(produce((state: EditorState) => {
                 const ctoText = Printer.toCTO(m);

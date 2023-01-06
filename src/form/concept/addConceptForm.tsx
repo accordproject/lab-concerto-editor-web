@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
@@ -41,11 +41,14 @@ const AddDeclarationForm = ({ active, onClose }: { active: boolean, onClose: (a:
     });
 
     const currNamespace = useStore(state => state.editorNamespace) as IModel;
-    const defaultDeclarationName = `declaration${currNamespace.declarations?.length}`;
+    const [defaultDeclarationName, setDefaultDeclarationName] = useState(`declaration${currNamespace.declarations?.length}`);
     const AddDeclarationFromData = useStore(state => state.addDeclarationFromData)
 
     const onSubmit = async (newDeclarationData: AddDeclarationFormData) => {
             AddDeclarationFromData(newDeclarationData)
+            if (currNamespace.declarations) {
+                setDefaultDeclarationName(`declaration${currNamespace.declarations?.length + 1}`);
+            }
             onClose(false)
             reset()
     };
@@ -88,11 +91,12 @@ const AddDeclarationForm = ({ active, onClose }: { active: boolean, onClose: (a:
                                             required
                                             id="name"
                                             label="Declaration Name"
-                                            defaultValue={defaultDeclarationName}
+                                            value={defaultDeclarationName}
                                             fullWidth
                                             margin="dense"
                                             {...register('name')}
                                             error={errors.name ? true : false}
+                                            onChange={(e) => {setDefaultDeclarationName(e.target.value)}}
                                         />
                                         <Typography variant="inherit" color="textSecondary">
                                             {errors.name?.message?.toString()}
