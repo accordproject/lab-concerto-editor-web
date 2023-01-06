@@ -229,6 +229,9 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                 }
             })
             state.models = newModels;
+            state.editorNamespace = undefined;
+            state.editorConcept = undefined;
+            state.editorProperty = undefined;
         }))
         get().modelsModified();
     },
