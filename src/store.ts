@@ -583,6 +583,8 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                     visible: state.models[state.editorNamespace.namespace].visible
                 }
         }))
+        get().modelsModified();
+
     },
     addConceptProperty(newConceptProperty: IProperty){
         set(produce((state: EditorState) => {
@@ -603,6 +605,8 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             state.editorNamespace = state.models[state.editorNamespace?.namespace as string].model;
             
         }))
+        get().modelsModified();
+
     }
 
 }))
