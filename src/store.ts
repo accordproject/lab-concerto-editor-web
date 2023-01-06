@@ -134,6 +134,7 @@ interface EditorState {
     // generic concept / enum actions
     declarationUpdated: (namespace: string, id: string, decl: IConceptDeclaration | IEnumDeclaration) => void
     addDeclarationFromData: (data: any) => void
+    deleteEditorConcept: () => void
 
     // concept actions
     conceptPropertyAdded: (namespace: string, conceptName: string) => void
@@ -229,6 +230,9 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                 }
             })
             state.models = newModels;
+            state.editorNamespace = undefined;
+            state.editorConcept = undefined;
+            state.editorProperty = undefined;
         }))
         get().modelsModified();
     },
@@ -294,6 +298,7 @@ const useEditorStore = create<EditorState>()((set, get) => ({
     },
     modelsLoaded: (models: IModels) => {
         get().clearModels();
+        console.log(models.models)
         models.models.forEach(m => {
             set(produce((state: EditorState) => {
                 const ctoText = Printer.toCTO(m);
@@ -579,6 +584,8 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                     visible: state.models[state.editorNamespace.namespace].visible
                 }
         }))
+        get().modelsModified();
+
     },
     addConceptProperty(newConceptProperty: IProperty){
         set(produce((state: EditorState) => {
@@ -599,6 +606,28 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             state.editorNamespace = state.models[state.editorNamespace?.namespace as string].model;
             
         }))
+        get().modelsModified();
+    },
+    deleteEditorConcept(){
+        set(produce((state: EditorState)=>{
+        
+            try{
+            state.models[state.editorNamespace?.namespace as string].model.declarations = state.editorNamespace?.declarations?.filter((decl) => decl.name!=state.editorConcept?.name)
+
+            state.editorNamespace = state.models[state.editorNamespace?.namespace as string].model
+            state.editorConcept = undefined
+            if(state.editorNamespace?.namespace)
+                state.models[state.editorNamespace?.namespace] = {
+                    model: state.models[state.editorNamespace?.namespace as string].model,
+                    text: Printer.toCTO(state.editorNamespace),
+                    visible: true
+                }
+            } catch(e) {
+                
+            }
+        }))
+
+        get().modelsModified();
     }
 
 }))

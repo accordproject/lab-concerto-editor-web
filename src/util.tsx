@@ -39,7 +39,7 @@ function isString(value: unknown) {
 
 export function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message
-  return String(error)
+  return String(error+"jhvcvxbc")
 }
 
 export function errorToMessage(error: unknown): string {

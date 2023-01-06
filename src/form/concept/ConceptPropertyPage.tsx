@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+import  DeleteIcon  from '@mui/icons-material/Delete';
 
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -82,6 +83,9 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                     lower : data.validator.lower ? Number(data.validator.lower) : null,
                     upper : data.validator.upper ? Number(data.validator.upper) : null,
                 };
+                if (data.validator.lower && data.validator.upper && data.validator.lower > data.validator.upper) {
+                    data.validator = null;
+                }
             }
             else {
                 data.validator = null;
@@ -103,6 +107,7 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
             ...property,
             ...data
         }
+        console.log(newData);
         conceptPropertyUpdated(model.namespace, concept.name, property.name, newData);
     };
 
@@ -211,6 +216,9 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                             onClick={handleSubmit(onSubmit)}
                         >
                             Save
+                        </Button>
+                        <Button variant="outlined" style={{"marginLeft":"3%"}} color="secondary" startIcon={<DeleteIcon />}>
+                            Delete
                         </Button>
                     </Box>
                 </Box>

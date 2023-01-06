@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import { PrimaryPropertyTypes, getClassFromType } from '../../util';
@@ -41,7 +41,7 @@ const AddConceptPropertyForm = ({ active, onClose }: { active: boolean, onClose:
     });
 
     const currConcept = useStore(state => state.editorConcept) as IConceptDeclaration;
-    const defaultPropertyName = `prop${currConcept.properties?.length}`;
+    const [defaultPropertyName, setDefaultPropertyName] = useState(`prop${currConcept?.properties?.length}`);
     const addConceptProperty = useStore(state => state.addConceptProperty)
 
     const onSubmit = async (newPropertyData: AddConceptPropertyFormData) => {
@@ -52,6 +52,9 @@ const AddConceptPropertyForm = ({ active, onClose }: { active: boolean, onClose:
                 isOptional: false
             }
             addConceptProperty(newProp);
+            if (currConcept.properties) {
+                setDefaultPropertyName(`prop${currConcept.properties?.length + 1}`);
+            }
             onClose(false)
             reset()
     };
@@ -97,11 +100,12 @@ const AddConceptPropertyForm = ({ active, onClose }: { active: boolean, onClose:
                                             required
                                             id="name"
                                             label="Declaration Name"
-                                            defaultValue={defaultPropertyName}
+                                            value={defaultPropertyName}
                                             fullWidth
                                             margin="dense"
                                             {...register('name')}
                                             error={errors.name ? true : false}
+                                            onChange={(e) => setDefaultPropertyName(e.target.value)}
                                         />
                                         <Typography variant="inherit" color="textSecondary">
                                             {errors.name?.message?.toString()}

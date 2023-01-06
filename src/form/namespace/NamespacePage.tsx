@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-
+import DeleteIcon from "@mui/icons-material/Delete"
 import { useForm } from 'react-hook-form';
 import {
     Paper,
@@ -18,6 +18,12 @@ import { IModel } from '../../metamodel/concerto.metamodel';
 const NamespacePage = ({ model }: { model: IModel }) => {
 
     const namespaceNameUpdated = useStore(state => state.namespaceNameUpdated);
+    const namespaceRemoved = useStore(state => state.namespaceRemoved);
+    const editorNamespace = useStore(state => state.editorNamespace);
+
+    function onDeleteNamespace() {
+        namespaceRemoved(editorNamespace?.namespace as string)
+    }
 
     const validationSchema = Yup.object().shape({
         namespace: Yup.string().required('Namespace name is required')
@@ -76,6 +82,9 @@ const NamespacePage = ({ model }: { model: IModel }) => {
                             onClick={handleSubmit(onSubmit)}
                         >
                             Save
+                        </Button>
+                        <Button variant="outlined" style={{"marginLeft":"10px"}} color="secondary" startIcon={<DeleteIcon />} onClick={onDeleteNamespace}>
+                            Delete
                         </Button>
                     </Box>
                 </Box>
