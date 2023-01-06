@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useForm } from 'react-hook-form';
 import {
@@ -22,6 +23,12 @@ const EnumPage = ({ model, enumDeclaration }: { model: IModel, enumDeclaration: 
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Name is required')
     });
+
+    const deleteEditorConcept = useStore(state => state.deleteEditorConcept);
+
+    const onConceptDelete = () => {
+        deleteEditorConcept();
+    }
 
     const {
         register,
@@ -75,6 +82,9 @@ const EnumPage = ({ model, enumDeclaration }: { model: IModel, enumDeclaration: 
                             onClick={handleSubmit(onSubmit)}
                         >
                             Save
+                        </Button>
+                        <Button variant="outlined" style={{"marginLeft":"10px"}} color="secondary" startIcon={<DeleteIcon />} onClick={onConceptDelete}>
+                            Delete
                         </Button>
                     </Box>
                 </Box>

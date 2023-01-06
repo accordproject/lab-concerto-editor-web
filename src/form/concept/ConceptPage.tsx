@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -31,6 +32,11 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
 
     const classDeclaration = selectClassDeclaration(`${model.namespace}.${concept.name}`);
     const allowEditIdentifier = classDeclaration.idField !== undefined;
+    const deleteEditorConcept = useStore(state => state.deleteEditorConcept);
+
+    const onConceptDelete = () => {
+        deleteEditorConcept();
+    }
 
     const shape: ObjectShape = {
         name: Yup.string().required('Name is required'),
@@ -217,6 +223,9 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
                             onClick={handleSubmit(onSubmit)}
                         >
                             Save
+                        </Button>
+                        <Button variant="outlined" style={{"marginLeft":"10px"}} color="secondary" startIcon={<DeleteIcon />} onClick={onConceptDelete}>
+                            Delete
                         </Button>
                     </Box>
                 </Box>

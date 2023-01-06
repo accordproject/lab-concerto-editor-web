@@ -134,6 +134,7 @@ interface EditorState {
     // generic concept / enum actions
     declarationUpdated: (namespace: string, id: string, decl: IConceptDeclaration | IEnumDeclaration) => void
     addDeclarationFromData: (data: any) => void
+    deleteEditorConcept: () => void
 
     // concept actions
     conceptPropertyAdded: (namespace: string, conceptName: string) => void
@@ -606,7 +607,27 @@ const useEditorStore = create<EditorState>()((set, get) => ({
             
         }))
         get().modelsModified();
+    },
+    deleteEditorConcept(){
+        set(produce((state: EditorState)=>{
+        
+            try{
+            state.models[state.editorNamespace?.namespace as string].model.declarations = state.editorNamespace?.declarations?.filter((decl) => decl.name!=state.editorConcept?.name)
 
+            state.editorNamespace = state.models[state.editorNamespace?.namespace as string].model
+            state.editorConcept = undefined
+            if(state.editorNamespace?.namespace)
+                state.models[state.editorNamespace?.namespace] = {
+                    model: state.models[state.editorNamespace?.namespace as string].model,
+                    text: Printer.toCTO(state.editorNamespace),
+                    visible: true
+                }
+            } catch(e) {
+                
+            }
+        }))
+
+        get().modelsModified();
     }
 
 }))
