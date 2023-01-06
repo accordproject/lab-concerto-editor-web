@@ -41,7 +41,7 @@ const AddConceptPropertyForm = ({ active, onClose }: { active: boolean, onClose:
     });
 
     const currConcept = useStore(state => state.editorConcept) as IConceptDeclaration;
-    const [defaultPropertyName, setDefaultPropertyName] = useState(`prop${currConcept.properties?.length}`);
+    const [defaultPropertyName, setDefaultPropertyName] = useState(`prop${currConcept?.properties?.length}`);
     const addConceptProperty = useStore(state => state.addConceptProperty)
 
     const onSubmit = async (newPropertyData: AddConceptPropertyFormData) => {
