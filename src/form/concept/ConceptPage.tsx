@@ -26,7 +26,7 @@ import { ObjectShape } from 'yup/lib/object';
 const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDeclaration }) => {
 
     const declarationUpdated = useStore(state => state.declarationUpdated);
-    const selectDeclarationFullyQualfiedNames = useStore(state => state.selectDeclarationFullyQualfiedNames);
+    const selectFullyQualfiedExtensionNames = useStore(state => state.selectFullyQualifiedExtensionNames);
     const selectPropertyNames = useStore(state => state.selectPropertyNames);
     const selectClassDeclaration = useStore(state => state.selectClassDeclaration);
 
@@ -82,7 +82,7 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
                 newData.superType = {
                     $class: 'concerto.metamodel@1.0.0.TypeIdentifier',
                     name: name,
-                    namespace
+                    namespace: namespace
                 }
                 console.log(newData.superType)
             }
@@ -152,7 +152,10 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
                                 <MenuItem style={{"display":"block"}} key='$NONE' value='$NONE'>
                                     NONE
                                 </MenuItem>
-                                {selectDeclarationFullyQualfiedNames(decl => !isEnum(decl) && decl.name !== concept.name).map(conceptFqn =>
+                                {/* Returns list of all declarations that follow the function passed into it. 
+                                Currently we ensure they arent enums and arent the same current concept name. 
+                                We need to pass another function which checkes for the above two and the attributes of these options to ensure same name doesnt occur.*/}
+                                {selectFullyQualfiedExtensionNames(decl => !isEnum(decl) && decl.name !== concept.name).map(conceptFqn =>
                                     <MenuItem style={{"display":"block"}} key={conceptFqn} value={conceptFqn}>
                                         { conceptFqn}
                                     </MenuItem>

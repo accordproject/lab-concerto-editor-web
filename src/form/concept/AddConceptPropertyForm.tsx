@@ -13,11 +13,16 @@ import {
     Select,
     MenuItem,
     InputLabel,
-    FormControl
+    FormControl,
+    FormLabel,
+    RadioGroup,
+    Radio,
+    FormControlLabel
 } from '@material-ui/core';
 
 import useStore from '../../store';
 import { IConceptDeclaration, IDeclaration, IModel } from '../../metamodel/concerto.metamodel';
+import { getNameOfType, getShortName } from '../../modelUtil';
 
 interface AddConceptPropertyFormData {
     type: string;
@@ -41,20 +46,37 @@ const AddConceptPropertyForm = ({ active, onClose }: { active: boolean, onClose:
     });
 
     const currConcept = useStore(state => state.editorConcept) as IConceptDeclaration;
-    const [defaultPropertyName, setDefaultPropertyName] = useState(`prop${currConcept?.properties?.length}`);
     const addConceptProperty = useStore(state => state.addConceptProperty)
+    const selectDeclarationFullyQualfiedNames = useStore(state => state.selectDeclarationFullyQualfiedNames);
+
+    const [defaultPropertyName, setDefaultPropertyName] = useState(`prop${currConcept?.properties?.length}`);
+    const [primitiveOverComplexProperty, setPrimitiveOverComplexProperty] = useState("Primitive Type");
 
     const onSubmit = async (newPropertyData: AddConceptPropertyFormData) => {
-            const newProp = {
-                $class: newPropertyData.type,
-                name: newPropertyData.name,
-                isArray: false,
-                isOptional: false
+            if (primitiveOverComplexProperty === "Primitive Type") {
+                const newProp = {
+                    $class: newPropertyData.type,
+                    name: newPropertyData.name,
+                    isArray: false,
+                    isOptional: false
+                }
+                addConceptProperty(newProp);
+            } else {
+                const newProp = {
+                    $class: "concerto.metamodel@1.0.0.ObjectProperty",
+                    type: {name: getShortName(newPropertyData.type)},
+                    name: newPropertyData.name,
+                    isArray: false,
+                    isOptional: false
+                }
+                console.log(newProp);
+                addConceptProperty(newProp);
             }
-            addConceptProperty(newProp);
+
             if (currConcept.properties) {
                 setDefaultPropertyName(`prop${currConcept.properties?.length + 1}`);
             }
+
             onClose(false)
             reset()
     };
@@ -73,9 +95,26 @@ const AddConceptPropertyForm = ({ active, onClose }: { active: boolean, onClose:
                             <Box px={3} py={2}>
                                 <Grid container spacing={1}>
                                     <Grid item xs={12} sm={12}>
-                                    <FormControl fullWidth>
+                                    <FormControl>
+                                        <RadioGroup
+                                            row
+                                            aria-labelledby="demo-controlled-radio-buttons-group"
+                                            name="controlled-radio-buttons-group"
+                                            value={primitiveOverComplexProperty}
+                                            onChange={(e) => setPrimitiveOverComplexProperty(e.currentTarget.value)}
+                                        >
+                                            <FormControlLabel value="Primitive Type" control={<Radio />} label="Primitive Type" />
+                                            <FormControlLabel value="Complex Type" control={<Radio />} label="Complex Type" />
+                                        </RadioGroup>
+                                    </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} sm={12}>
+                                    {
+                                        primitiveOverComplexProperty === "Primitive Type" ? 
+
+                                        <FormControl fullWidth>
                                             <InputLabel id="type-label">Property Type</InputLabel>
-                                                <Select
+                                            <Select
                                                 required
                                                 id="type"
                                                 label="Declaration Type"
@@ -89,11 +128,33 @@ const AddConceptPropertyForm = ({ active, onClose }: { active: boolean, onClose:
                                                             return <MenuItem style={{"display":"block"}} value={getClassFromType(propType)}>{" "+propType}</MenuItem>
                                                         })
                                                     }
-                                                </Select>
+                                            </Select> 
+                                        </FormControl>
+                                                : 
+                                        <FormControl fullWidth>
+                                            <InputLabel id="type-label">Property Type</InputLabel>
+                                            <Select
+                                                required
+                                                id="type"
+                                                label="Declaration Type"
+                                                defaultValue={''}
+                                                margin="dense"
+                                                {...register('type')}
+                                                error={errors.type ? true : false}
+                                                >
+                                                    {
+                                                        selectDeclarationFullyQualfiedNames().map(conceptFqn =>
+                                                            <MenuItem style={{"display":"block"}} key={conceptFqn} value={conceptFqn}>
+                                                                {conceptFqn}
+                                                            </MenuItem>)
+                                                    }
+                                            </Select> 
+                                        </FormControl>
+
+                                    }
                                             <Typography variant="inherit" color="textSecondary">
                                                 {errors.type?.message?.toString()}
                                             </Typography>
-                                    </FormControl>
                                     </Grid>
                                     <Grid item xs={12} sm={12}>
                                         <TextField

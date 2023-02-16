@@ -1,7 +1,7 @@
 import create from 'zustand'
 import produce from 'immer';
 import { saveAs } from 'file-saver';
-import { ClassDeclaration, ModelFile, ModelManager, ModelUtil, Property } from '@accordproject/concerto-core';
+import { ClassDeclaration, ConceptDeclaration, ModelFile, ModelManager, ModelUtil, Property } from '@accordproject/concerto-core';
 import { Printer, Parser } from '@accordproject/concerto-cto';
 import { IDeclaration, IImport, IModels } from './metamodel/concerto.metamodel';
 import assert from 'assert';
@@ -148,6 +148,7 @@ interface EditorState {
     // selectors
     selectClassDeclaration: (conceptFqn: string) => ClassDeclaration
     selectDeclarationFullyQualfiedNames: (filterFunc?: (value: IDeclaration) => boolean) => (string | undefined)[]
+    selectFullyQualifiedExtensionNames: (filterFunc?: (value: IDeclaration) => boolean) => (string | undefined)[]
     selectPropertyNames: (conceptFqn: string, filterFunc?: (value: Property) => boolean) => string[]
     selectModelManager: () => ModelManager;
 }
@@ -517,6 +518,39 @@ const useEditorStore = create<EditorState>()((set, get) => ({
                 d => filterFunc ? filterFunc(d) : () => true).map(
                     concept => `${modelEntry.model.namespace}.${concept.name}`));
     },
+    selectFullyQualifiedExtensionNames: (filterFunc?: (value: IDeclaration) => boolean) => {
+        const currConcept = get().editorConcept;
+        assert(currConcept !== undefined, "currConcept ie editorConcept is Undefined");
+        return Object.values(get().models).filter(m => {
+            if (m.model.declarations?.find(d => d.name === currConcept.name) !== undefined) {
+                return true
+            }
+        }).flatMap(
+            modelEntry => modelEntry.model.declarations?.map(d => d as IConceptDeclaration).filter(
+                d => filterFunc ? filterFunc(d) : () => true).filter(possibleDecl => {
+                    const extentionProperties = new Set(possibleDecl.properties.map(p => p.name));
+                    var possiblyExtendedConceptHolder = possibleDecl.superType
+                    while (possiblyExtendedConceptHolder != undefined) {
+                        const extendedConceptNamespace = possiblyExtendedConceptHolder.namespace ? possiblyExtendedConceptHolder.namespace : get().editorNamespace?.namespace as string;
+                        const modelEntry = get().models[extendedConceptNamespace];
+                        const extendedConcept = modelEntry.model.declarations?.find(decl => decl.name === possiblyExtendedConceptHolder?.name) as IConceptDeclaration;
+                        if (extendedConcept === undefined) {
+                            return false;
+                        }
+                        extendedConcept.properties.forEach(p => extentionProperties.add(p.name));
+                        possiblyExtendedConceptHolder = extendedConcept.superType;
+                    }
+                    console.log(possibleDecl, extentionProperties);
+                    for (var i = 0; i < currConcept.properties.length; ++i) {
+                    const p = currConcept.properties[i];
+                    if (extentionProperties.has(p.name)) {
+                        return false;
+                    }
+                    }
+                    return true;
+                }).map(
+                    concept => `${modelEntry.model.namespace}.${concept.name}`));
+    },
     selectClassDeclaration: (conceptFqn: string) => {
         return get().selectModelManager().getType(conceptFqn);
     },
@@ -628,8 +662,10 @@ const useEditorStore = create<EditorState>()((set, get) => ({
         }))
 
         get().modelsModified();
+    },
+    getDeclaration() {
+        console.log(get().models);
     }
-
 }))
 
 export default useEditorStore;
