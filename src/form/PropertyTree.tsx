@@ -7,7 +7,7 @@ import { ExpandMore as ExpandMoreIcon, ChevronRight as ChevronRightIcon } from '
 import useStore from '../store';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { Button } from '@mui/material';
-import AddDeclarationForm from './concept/addConceptForm';
+import AddDeclarationForm from './concept/addDeclarationForm';
 import { isEnum } from '../modelUtil';
 import { getClassFromType } from '../util';
 import { editor } from 'monaco-editor';

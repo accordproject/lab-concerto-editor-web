@@ -61,6 +61,7 @@ const AddDeclarationForm = ({ active, onClose }: { active: boolean, onClose: (a:
                 <article className="message is-info">
                     <div className="message-header">
                         <p>Add Declaration </p>
+                        <div onClick={() => onClose(false)}><i className="fa fa-window-close" aria-hidden="true"></i></div>
                     </div>
                     <div className="message-body">
                         <Fragment>

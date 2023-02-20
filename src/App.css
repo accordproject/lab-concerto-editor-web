@@ -47,6 +47,10 @@
   width: 100%;
 }
 
+.container.is-fluid {
+  padding-left: 0 !important;
+}
+
 input {
   width: 50%;
   padding: 6px 10px;

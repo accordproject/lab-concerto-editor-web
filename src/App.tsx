@@ -9,6 +9,7 @@ import DiagramHost from './diagram/DiagramHost';
 import CodeHost from './code/CodeHost';
 import FormHost from './form/FormHost';
 import LoadFromUrlForm from './form/LoadFromUrlForm';
+import CodegenMenu from './CodegenMenu';
 
 function App() {
   const viewChanged = useStore((state) => state.viewChanged);
@@ -46,6 +47,7 @@ function App() {
           <button className="button mt-2" onClick={() => setDisplayModal(true)}>Load from URL</button>
           <button className="button mt-2" onClick={onSave}>Save to Browser</button>
           <button className="button mt-2" onClick={onDownload}>Download</button>
+          <CodegenMenu></CodegenMenu>
           <div className=" ml-5 tabs is-centered is-toggle is-toggle-rounded">
                 <ul>
                   <li className={view === 'Code' ? 'is-active' : undefined}><a onClick={() => viewChanged('Code')}>Code</a></li>

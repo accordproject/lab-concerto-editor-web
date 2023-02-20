@@ -6,6 +6,8 @@ import { Printer, Parser } from '@accordproject/concerto-cto';
 import { IDeclaration, IImport, IModels } from './metamodel/concerto.metamodel';
 import assert from 'assert';
 import { getClass } from './modelUtil';
+import  FileWriter  from './fileWriter';
+import { CodeGen } from '@accordproject/concerto-tools';
 
 import {
     Node,
@@ -151,6 +153,9 @@ interface EditorState {
     selectFullyQualifiedExtensionNames: (filterFunc?: (value: IDeclaration) => boolean) => (string | undefined)[]
     selectPropertyNames: (conceptFqn: string, filterFunc?: (value: Property) => boolean) => string[]
     selectModelManager: () => ModelManager;
+
+    //codgen
+    compileToTarget: (target: string) => void;
 }
 
 const useEditorStore = create<EditorState>()((set, get) => ({
@@ -663,8 +668,65 @@ const useEditorStore = create<EditorState>()((set, get) => ({
 
         get().modelsModified();
     },
-    getDeclaration() {
-        console.log(get().models);
+    compileToTarget: async (target: string) => {
+
+        try{
+            const mm = new ModelManager();
+            const models = get().models;
+            for( const ns in models) {
+                const modelAst = Parser.parse(models[ns].text, undefined, { skipLocationNodes: true }) as IModel;
+                const model = new ModelFile(mm, modelAst);
+                mm.addModelFile(model, undefined, undefined, true);
+            }
+            await mm.updateExternalModels();
+            let visitor = null;
+            switch(target) {
+        	    case 'Go':
+        	        visitor = new CodeGen.GoLangVisitor();
+        	        break;
+        	    case 'PlantUML':
+        	    visitor = new CodeGen.PlantUMLVisitor();
+        	    break;
+        	case 'Typescript':
+        	    visitor = new CodeGen.TypescriptVisitor();
+        	    break;
+        	case 'Java':
+        	    visitor = new CodeGen.JavaVisitor();
+        	    break;
+        	case 'JSONSchema':
+        	    visitor = new CodeGen.JSONSchemaVisitor();
+        		break;
+        	case 'XMLSchema':
+        	    visitor = new CodeGen.XmlSchemaVisitor();
+        	    break;
+        	case 'GraphQL':
+       		    visitor = new CodeGen.GraphQLVisitor();
+        	    break;
+        	case 'CSharp':
+        	    visitor = new CodeGen.CSharpVisitor();
+       		    break;
+        	case 'OData':
+        	    visitor = new CodeGen.ODataVisitor();
+        	    break;
+        	}
+
+        	if(visitor) {
+        	    let parameters = {} as any;
+        	    parameters.fileWriter = new FileWriter("");
+       	    	mm.accept(visitor, parameters);
+
+                const zip = new JSZip();
+                for( const fileName in parameters.fileWriter.filenameToContent) {
+                    zip.file(fileName, parameters.fileWriter.filenameToContent[fileName] );
+                }
+                
+                zip.generateAsync({ type: "blob" }).then(function (blob) {
+                    saveAs(blob, `${target}.zip`);
+                });
+        	}
+        } catch (err) {
+            get().errorChanged(getErrorMessage(err));
+        }
     }
 }))
 
