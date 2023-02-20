@@ -191,6 +191,7 @@ const ConceptPage = ({ model, concept }: { model: IModel, concept: IConceptDecla
                         </Grid>}
                         <Grid item xs={12}>
                             <FormControlLabel
+                                style={{marginLeft:"2px",marginBottom:"7px"}}
                                 control={
                                     <Controller
                                         name='isAbstract'

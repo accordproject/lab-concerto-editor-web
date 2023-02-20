@@ -181,6 +181,36 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                         </Grid>
                         <Grid item xs={12}>
                             <FormControlLabel
+                                style={{marginLeft:"2px",marginBottom:"7px"}}
+                                control={
+                                    <Controller
+                                        name='isOptional'
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Checkbox
+                                                {...field}
+                                                checked={!!field.value} 
+                                                onChange={(e) => field.onChange(e.target.checked)}
+                                            />
+                                        )}
+                                    />
+                                }
+                                label={
+                                    <Typography color={errors.isOptional ? 'error' : 'inherit'}>
+                                        Is an optional property?
+                                    </Typography>
+                                }
+                            />
+                            <br />
+                            <Typography variant="inherit" color="textSecondary">
+                                {errors.isOptional
+                                    ? '(' + errors.isOptional.message + ')'
+                                    : ''}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <FormControlLabel
+                                style={{marginLeft:"2px",marginBottom:"7px"}}
                                 control={
                                     <Controller
                                         name='isArray'

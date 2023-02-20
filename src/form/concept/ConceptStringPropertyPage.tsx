@@ -130,6 +130,7 @@ const ConceptStringPropertyPage = ({ model, concept, property }: { model: IModel
 
                         <Grid item xs={12}>
                             <FormControlLabel
+                                style={{marginLeft:"2px",marginBottom:"7px"}}
                                 control={
                                     <Controller
                                         name='isOptional'
@@ -158,6 +159,7 @@ const ConceptStringPropertyPage = ({ model, concept, property }: { model: IModel
                         </Grid>
                         <Grid item xs={12}>
                             <FormControlLabel
+                                style={{marginLeft:"2px",marginBottom:"7px"}}
                                 control={
                                     <Controller
                                         name='isArray'
