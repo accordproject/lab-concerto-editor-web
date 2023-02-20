@@ -118,6 +118,13 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                     <Typography variant="h6">
                         Edit Property
                     </Typography>
+                    <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleSubmit(onSubmit)}
+                        >
+                            Save
+                    </Button>
                     <Grid container spacing={1}>
                         <Grid item xs={12} sm={12}>
                             <TextField

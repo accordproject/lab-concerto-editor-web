@@ -56,6 +56,7 @@ export default function CodegenMenu() {
         disableElevation
         onClick={handleClick}
         endIcon={<KeyboardArrowDownIcon />}
+        style={{backgroundColor:"#485fc7"}}
       >
         Export
       </Button>

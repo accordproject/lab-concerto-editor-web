@@ -24,7 +24,7 @@ function PropertyTree() {
   const [displayAddDeclModal, setDisplayAddDecModal] = useState(false);
   const [displayConceptPropertyModel, setDisplayConceptPropertyModel] = useState(false);
 
-  const addNewButton = (buttonLabel: string, nodeId: string) => {
+  const getAddButton = (buttonLabel: string, nodeId: string) => {
     return (
       <TreeItem 
         nodeId = {`Add${buttonLabel} ${nodeId}`} 
@@ -35,9 +35,13 @@ function PropertyTree() {
               border: "none", 
               background: "none",
               color: "#4a4a4a",
+              float: "left"
             }} 
             onClick={buttonLabel === "Namespace" ? addModel : buttonLabel === "Declaration" ? addDeclaration : addProperty}>
-            Add {buttonLabel} {buttonLabel==="Property"?"(WIP)":""}
+            <span className="pt-1 panel-icon">
+                <i className="fas fa-plus" aria-hidden="true"></i>
+            </span>
+            Add {buttonLabel}
           </button>
         } 
       />
@@ -57,7 +61,7 @@ function PropertyTree() {
             {modelEntry.model.namespace}
             </>
           }>
-          {addNewButton("Declaration", modelEntry.model.namespace)}
+          {getAddButton("Declaration", modelEntry.model.namespace)}
           <AddDeclarationForm active={displayAddDeclModal} onClose={setDisplayAddDecModal}></AddDeclarationForm>
           {modelEntry.model.declarations?.map(decl => {
             return (
@@ -71,7 +75,7 @@ function PropertyTree() {
                     {decl.name}
                   </>
                   }>
-                {addNewButton("Property", `${modelEntry.model.namespace}#${decl.name}`)}
+                {getAddButton("Property", `${modelEntry.model.namespace}#${decl.name}`)}
                 <AddConceptPropertyForm active={displayConceptPropertyModel} onClose={setDisplayConceptPropertyModel}></AddConceptPropertyForm>
                 {(decl as IEnumDeclaration | IConceptDeclaration).properties.map(prop => {
                   return <TreeItem 
