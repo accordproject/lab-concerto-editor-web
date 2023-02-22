@@ -1,0 +1,10 @@
+.tree-item-label {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items:center
+}
+
+.tree-item-label-title {
+  word-break: break-all;
+}

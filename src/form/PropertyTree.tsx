@@ -14,6 +14,8 @@ import { editor } from 'monaco-editor';
 import { IConcept } from '../metamodel/concerto';
 import AddConceptPropertyForm from './concept/AddConceptPropertyForm';
 
+import './PropertyTree.css'
+
 function PropertyTree() {
   const models = useStore(state => state.models);
   const editorItemSelected = useStore(state => state.editorItemSelected);
@@ -51,16 +53,20 @@ function PropertyTree() {
   const buildTree = () => {
     return Object.values(models).map(modelEntry => {
       return (
+        <>
         <TreeItem 
           nodeId={modelEntry.model.namespace} 
           label={
-            <>
-            <span className="pt-1 panel-icon">
-                <i className="fas fa-book" aria-hidden="true"></i>
+            <span className='tree-item-label'>
+              <span className='tree-item-label-title'>
+                {modelEntry.model.namespace}
+              </span>
+              <span className="panel-icon">
+                  <i className="fas fa-book" aria-hidden="true"></i>
+              </span>
             </span>
-            {modelEntry.model.namespace}
-            </>
-          }>
+          }
+          >
           {getAddButton("Declaration", modelEntry.model.namespace)}
           <AddDeclarationForm active={displayAddDeclModal} onClose={setDisplayAddDecModal}></AddDeclarationForm>
           {modelEntry.model.declarations?.map(decl => {
@@ -94,6 +100,8 @@ function PropertyTree() {
             )
           })}
         </TreeItem>
+        
+        </>
       )
     });
   }
@@ -138,6 +146,7 @@ function PropertyTree() {
 
       <TreeView
         aria-label="file system navigator"
+        
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
         sx={{flexGrow: 1, maxWidth: 400, overflowY: 'auto' }}

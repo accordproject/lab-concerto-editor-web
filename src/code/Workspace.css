@@ -1,0 +1,15 @@
+.panel {
+  width: 100%;
+  max-width: 100%;
+}
+
+.panel-block {
+  width: 100%;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+}
+
+.panel-item-title {
+  word-break: break-all;
+}
