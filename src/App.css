@@ -43,6 +43,10 @@
   height: 80vh;
 }
 
+.properties td {
+    padding: 2px;
+}
+
 .workspace {
   width: 100%;
 }
