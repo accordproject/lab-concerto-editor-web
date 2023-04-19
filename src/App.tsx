@@ -9,6 +9,7 @@ import DiagramHost from './diagram/DiagramHost';
 import CodeHost from './code/CodeHost';
 import FormHost from './form/FormHost';
 import LoadFromUrlForm from './form/LoadFromUrlForm';
+import CodegenMenu from './CodegenMenu';
 
 function App() {
   const viewChanged = useStore((state) => state.viewChanged);
@@ -40,25 +41,26 @@ function App() {
         </p>
         <p className="subtitle">
           v1.0.0
-        </p>
+        </p>      
         <div className="buttons">
-          <button className="button" onClick={() => loadSampleRequested()}>Load Sample</button>
-          <button className="button" onClick={() => setDisplayModal(true)}>Load from URL</button>
-          <button className="button" onClick={onSave}>Save to Browser</button>
-          <button className="button" onClick={onDownload}>Download</button>
+          <button className="button mt-2" onClick={() => loadSampleRequested()}>Load Sample</button>
+          <button className="button mt-2" onClick={() => setDisplayModal(true)}>Load from URL</button>
+          <button className="button mt-2" onClick={onSave}>Save to Browser</button>
+          <button className="button mt-2" onClick={onDownload}>Download</button>
+          <CodegenMenu></CodegenMenu>
+          <div className=" ml-5 tabs is-centered is-toggle is-toggle-rounded">
+                <ul>
+                  <li className={view === 'Code' ? 'is-active' : undefined}><a onClick={() => viewChanged('Code')}>Code</a></li>
+                  <li className={view === 'Form' ? 'is-active' : undefined}><a onClick={() => viewChanged('Form')}>Form</a></li>
+                  <li className={view === 'Diagram' ? 'is-active' : undefined}><a onClick={() => viewChanged('Diagram')}>Diagram</a></li>
+                </ul>
+          </div>  
         </div>
         <Notification />
         <LoadFromUrlForm active={displayModal} onClose={setDisplayModal}/>
         <div className="container is-fluid">
           <div className="columns">
             <div className="column">
-              <div className="tabs is-centered is-toggle is-toggle-rounded">
-                <ul>
-                  <li className={view === 'Code' ? 'is-active' : undefined}><a onClick={() => viewChanged('Code')}>Code</a></li>
-                  <li className={view === 'Form' ? 'is-active' : undefined}><a onClick={() => viewChanged('Form')}>Form</a></li>
-                  <li className={view === 'Diagram' ? 'is-active' : undefined}><a onClick={() => viewChanged('Diagram')}>Diagram</a></li>
-                </ul>
-              </div>
               {view === 'Code' ? <CodeHost /> : view === 'Diagram' ? <DiagramHost /> : <FormHost/>}
             </div>
           </div>

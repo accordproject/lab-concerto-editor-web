@@ -54,6 +54,7 @@ const LoadFromUrlForm = ({ active, onClose }: { active: boolean, onClose: (a: bo
                 <article className="message is-info">
                     <div className="message-header">
                         <p>Load model from URL</p>
+                        <div onClick={() => onClose(false)}><i className="fa fa-window-close" aria-hidden="true"></i></div>
                     </div>
                     <div className="message-body">
                         <Fragment>

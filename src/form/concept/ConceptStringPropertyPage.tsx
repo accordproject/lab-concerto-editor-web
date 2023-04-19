@@ -1,8 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-import  DeleteIcon  from '@mui/icons-material/Delete';
-
 import { useForm, Controller } from 'react-hook-form';
 import {
     Paper,
@@ -16,19 +14,13 @@ import {
 } from '@material-ui/core';
 
 import useStore from '../../store';
-import { IProperty, IConceptDeclaration, IModel } from '../../metamodel/concerto.metamodel';
+import { IConceptDeclaration, IModel, IStringProperty } from '../../metamodel/concerto.metamodel';
 
-import { isObjectOrRelationshipProperty, isBooleanProperty, isNumericProperty } from '../../modelUtil';
-
-const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, concept: IConceptDeclaration, property: IProperty }) => {
+const ConceptStringPropertyPage = ({ model, concept, property }: { model: IModel, concept: IConceptDeclaration, property: IStringProperty }) => {
 
     const conceptPropertyUpdated = useStore(state => state.conceptPropertyUpdated);
-
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Name is required'),
-        defaultValue: Yup.string(),
-        lowerLimit: Yup.number(),
-        upperLimit: Yup.number(),
         isArray: Yup.bool().oneOf([false, true], 'Array is required')
     });
 
@@ -39,75 +31,39 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
         control,
         handleSubmit,
         formState: { errors }
-    } = useForm<IProperty>({
-        resolver: yupResolver(validationSchema)
+    } = useForm<IStringProperty>({
+        resolver: yupResolver(validationSchema),
     });
 
+    
     useEffect(() => {
+
+        if(!!!property.validator){
+            setValue("validator.pattern", "");
+            setValue("validator.flags", "");
+        }
         reset(property);
 
-        if (!!!property.name) {
-            setValue('name', '');
-        }
 
-        if (!!!property.defaultValue) {
-            setValue('defaultValue', '');
-        }
-
-        if (!!!property.validator?.lower) {
-            setValue('validator.lower', undefined);
-        }
-
-        if (!!!property.validator?.upper) {
-            setValue('validator.upper', undefined);
-        }
     }, [property, reset, setValue]);
 
+
     const onSubmit = (data: any) => {
-        if (data.defaultValue) {
-            if (isNumericProperty(property)) {
-                data.defaultValue = data.defaultValue ? Number(data.defaultValue) : null;
-            }
-            else if (isBooleanProperty(property)) {
-                if (data.defaultValue == "true" || data.defaultValue == "false") {
-                    data.defaultValue = (data.defaultValue == "true")
-                }
-            }
-        }
-        if (data.validator) {
-            if (!data.validator.lower && !data.validator.upper) {
-                data.validator = null;
-            }
-            else if (isNumericProperty(property)){
-                data.validator = {
-                    lower : data.validator.lower ? Number(data.validator.lower) : null,
-                    upper : data.validator.upper ? Number(data.validator.upper) : null,
-                };
-                if (data.validator.lower && data.validator.upper && data.validator.lower > data.validator.upper) {
-                    data.validator = null;
-                }
-            }
-            else {
-                data.validator = null;
-            }
-        }
-
-        if (isNumericProperty(property) && data.validator && data.defaultValue) {
-            if (data.validator.lower && data.defaultValue < data.validator.lower) {
-                data.validator = null;
-                data.defaultValue = null;
-            }
-            else if (data.validator.upper && data.defaultValue > data.validator.upper) {
-                data.validator = null;
-                data.defaultValue = null;
-            }
-        }
-
         const newData = {
             ...property,
             ...data
         }
-        console.log(newData);
+
+        if(!newData.validator?.pattern)
+            delete newData.validator;
+        else{
+            newData.validator = {
+                $class: 'concerto.metamodel@1.0.0.StringRegexValidator',
+                pattern: newData.validator.pattern,
+                flags: newData.validator.flags,
+            }
+        }
+
         conceptPropertyUpdated(model.namespace, concept.name, property.name, newData);
     };
 
@@ -116,7 +72,7 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
             <Paper style={{"padding":"3%"}}>
                 <Box px={3} py={2}>
                     <Typography variant="h6">
-                        Edit Property
+                        Edit String Property
                     </Typography>
                     <Grid container spacing={1}>
                         <Grid item xs={12} sm={12}>
@@ -134,6 +90,7 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                 {errors.name?.message?.toString()}
                             </Typography>
                         </Grid>
+
                         <Grid item xs={12} sm={12}>
                             <TextField
                                 id="defaultValue"
@@ -141,7 +98,6 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                 defaultValue={property.defaultValue}
                                 fullWidth
                                 margin="dense"
-                                disabled={isObjectOrRelationshipProperty(property)}
                                 {...register('defaultValue')}
                                 error={errors.defaultValue ? true : false}
                             />
@@ -149,36 +105,29 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                 {errors.defaultValue?.message?.toString()}
                             </Typography>
                         </Grid>
-                        <Grid item xs={12} sm={12}>
+
+                        <Grid style={{display:"flex", width:"100%", justifyContent: "space-between"}} item xs={12} sm={12}>
                             <TextField
-                                id="lowerLimit"
-                                label="lowerLimit"
-                                defaultValue={property.validator?.lower}
-                                fullWidth
+                                id="validators.pattern"
+                                label="Regex Pattern"
+                                defaultValue={property.validator?.pattern}
                                 margin="dense"
-                                disabled={!isNumericProperty(property)}
-                                {...register('validator.lower')}
-                                error={errors.validator?.lower ? true : false}
-                            />
+                                {...register('validator.pattern')}
+                                error={errors.validator ? true : false}
+                                />
+                            <TextField
+                                id="validator.flags"
+                                label="Regex Flags"
+                                margin="dense"
+                                defaultValue={property.validator?.flags}
+                                {...register('validator.flags')}
+                                error={errors.validator ? true : false}
+                                />
                             <Typography variant="inherit" color="textSecondary">
-                                {errors.validator?.lower?.message?.toString()}
+                                {errors.validator?.message?.toString()}
                             </Typography>
                         </Grid>
-                        <Grid item xs={12} sm={12}>
-                            <TextField
-                                id="uppperLimit"
-                                label="uppperLimit"
-                                defaultValue={property.validator?.upper}
-                                fullWidth
-                                margin="dense"
-                                disabled={!isNumericProperty(property)}
-                                {...register('validator.upper')}
-                                error={errors.validator?.upper ? true : false}
-                            />
-                            <Typography variant="inherit" color="textSecondary">
-                                {errors.validator?.upper?.message?.toString()}
-                            </Typography>
-                        </Grid>
+
                         <Grid item xs={12}>
                             <FormControlLabel
                                 style={{marginLeft:"2px",marginBottom:"7px"}}
@@ -215,7 +164,6 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                                     <Controller
                                         name='isArray'
                                         control={control}
-                                        defaultValue={!!property.isArray}
                                         render={({ field }) => (
                                             <Checkbox
                                                 {...field}
@@ -247,9 +195,6 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
                         >
                             Save
                         </Button>
-                        <Button variant="outlined" style={{"marginLeft":"3%"}} color="secondary" startIcon={<DeleteIcon />}>
-                            Delete
-                        </Button>
                     </Box>
                 </Box>
             </Paper>
@@ -257,4 +202,4 @@ const ConceptPropertyPage = ({ model, concept, property }: { model: IModel, conc
     );
 };
 
-export default ConceptPropertyPage;
+export default ConceptStringPropertyPage;

@@ -3,6 +3,8 @@ import useStore from '../store';
 
 import Dropzone from './Dropzone';
 
+import './Workspace.css'
+
 function Workspace() {
   const models = useStore(state => state.models);
   const ctoModified = useStore(state => state.ctoModified);
@@ -20,14 +22,17 @@ function Workspace() {
 
   const namespaces = Object.keys(models).map(key => {
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
-    return <a key={key} className={editorNamespace?.namespace === key ? 'panel-block is-active' : 'panel-block'}>
-      <div onClick={() => onChangeNamespace(models[key].model)}>
+    return <a 
+      onClick={() => onChangeNamespace(models[key].model)} 
+      key={key} 
+      className={editorNamespace?.namespace === key ? 'panel-block is-active' : 'panel-block'}>
       <span className="panel-icon">
         <i className="fas fa-book" aria-hidden="true"></i>
       </span>
-      {key}
-      </div>
-      <span className="panel-icon" style={{marginLeft: 100}} onClick={() => onDeleteNamespace(key)}>
+      <span className='panel-item-title'>
+        {key}
+      </span>
+      <span className="panel-icon" onClick={() => onDeleteNamespace(key)}>
         <i className="fas fa-trash-can" aria-hidden="true"></i>
       </span>
       </a>

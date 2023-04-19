@@ -30,6 +30,10 @@ export function getType(property: PropertyOrEnum) {
   }
 }
 
+export function isStringProperty(property: PropertyOrEnum){
+  return property.$class.endsWith('StringProperty');
+}
+
 export function isObjectOrRelationshipProperty(property: PropertyOrEnum) {
   return (
     getClass(property).endsWith('ObjectProperty') ||
@@ -73,6 +77,30 @@ export function isEnum(obj: IConcept) {
 export function isString(property: IProperty) {
   return getClass(property) === 'concerto.metamodel@1.0.0.StringProperty' &&
     !property.isArray
+}
+
+export function isBooleanProperty(property: IProperty) {
+  return getClass(property) === 'concerto.metamodel@1.0.0.BooleanProperty' &&
+    !property.isArray
+}
+
+export function isDoubleProperty(property: IProperty) {
+  return getClass(property) === 'concerto.metamodel@1.0.0.DoubleProperty' &&
+    !property.isArray
+}
+
+export function isIntegerProperty(property: IProperty) {
+  return getClass(property) === 'concerto.metamodel@1.0.0.IntegerProperty' &&
+    !property.isArray
+}
+
+export function isLongProperty(property: IProperty) {
+  return getClass(property) === 'concerto.metamodel@1.0.0.LongProperty' &&
+    !property.isArray
+}
+
+export function isNumericProperty(property: IProperty) {
+  return isDoubleProperty(property) || isIntegerProperty(property) || isLongProperty(property);
 }
 
 export function getModifiers(property: PropertyOrEnum) {
